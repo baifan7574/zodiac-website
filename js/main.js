@@ -7104,25 +7104,52 @@ function getUserPoints(phone) {
 }
 
 // 添加积分
-function addPoints(phone, points, reason, type) {
+async function addPoints(phone, points, reason, type) {
     if (!phone) phone = currentUser?.phone;
     if (!phone) return;
     
-    const pointsData = JSON.parse(localStorage.getItem('userPoints') || '{}');
-    pointsData[phone] = (pointsData[phone] || 0) + points;
-    localStorage.setItem('userPoints', JSON.stringify(pointsData));
-    
-    // 记录积分变动
-    const records = JSON.parse(localStorage.getItem('pointsRecords') || '[]');
-    records.unshift({
-        phone: phone,
-        points: points,
-        type: 'earn',
-        reason: reason,
-        category: type || 'other',
-        time: new Date().toISOString()
-    });
-    localStorage.setItem('pointsRecords', JSON.stringify(records));
+    try {
+        // 获取当前积分
+        const currentPoints = await PointsAPI.getUserPoints(phone);
+        const newPoints = currentPoints + points;
+        
+        // 更新积分到 Supabase
+        await PointsAPI.updateUserPoints(phone, newPoints);
+        
+        // 添加积分记录
+        await PointsAPI.addPointsRecord({
+            phone: phone,
+            type: 'earn',
+            points: points,
+            reason: reason,
+            category: type || 'other',
+            time: new Date().toISOString()
+        });
+        
+        // 同时保存到 localStorage 作为备份
+        const pointsData = JSON.parse(localStorage.getItem('userPoints') || '{}');
+        pointsData[phone] = newPoints;
+        localStorage.setItem('userPoints', JSON.stringify(pointsData));
+        
+        console.log(`✅ 积分已添加: ${phone} +${points} (${reason})`);
+    } catch (error) {
+        console.error('添加积分失败:', error);
+        // 如果失败，仍然更新 localStorage（降级处理）
+        const pointsData = JSON.parse(localStorage.getItem('userPoints') || '{}');
+        pointsData[phone] = (pointsData[phone] || 0) + points;
+        localStorage.setItem('userPoints', JSON.stringify(pointsData));
+        
+        const records = JSON.parse(localStorage.getItem('pointsRecords') || '[]');
+        records.unshift({
+            phone: phone,
+            points: points,
+            type: 'earn',
+            reason: reason,
+            category: type || 'other',
+            time: new Date().toISOString()
+        });
+        localStorage.setItem('pointsRecords', JSON.stringify(records));
+    }
 }
 
 // 消费积分
