@@ -678,6 +678,128 @@ const InviteAPI = {
 };
 
 // ============================================
+// 积分相关 API
+// ============================================
+
+const PointsAPI = {
+    // 获取用户积分
+    async getUserPoints(phone) {
+        try {
+            const { data, error } = await window.supabase
+                .from('user_points')
+                .select('points')
+                .eq('phone', phone)
+                .single();
+            
+            if (error && error.code !== 'PGRST116') throw error;
+            
+            return data ? parseInt(data.points) || 0 : 0;
+        } catch (error) {
+            console.error('获取用户积分失败:', error);
+            return 0;
+        }
+    },
+    
+    // 更新用户积分
+    async updateUserPoints(phone, points) {
+        try {
+            // 先检查是否存在记录
+            const { data: existing, error: checkError } = await window.supabase
+                .from('user_points')
+                .select('*')
+                .eq('phone', phone)
+                .single();
+            
+            if (checkError && checkError.code !== 'PGRST116') throw checkError;
+            
+            if (existing) {
+                // 更新现有记录
+                const { data, error } = await window.supabase
+                    .from('user_points')
+                    .update({ 
+                        points: points,
+                        updated_at: new Date().toISOString()
+                    })
+                    .eq('phone', phone)
+                    .select()
+                    .single();
+                
+                if (error) throw error;
+                return data;
+            } else {
+                // 创建新记录
+                const { data, error } = await window.supabase
+                    .from('user_points')
+                    .insert({
+                        phone: phone,
+                        points: points
+                    })
+                    .select()
+                    .single();
+                
+                if (error) throw error;
+                return data;
+            }
+        } catch (error) {
+            console.error('更新用户积分失败:', error);
+            throw error;
+        }
+    },
+    
+    // 添加积分记录
+    async addPointsRecord(recordData) {
+        try {
+            const { data, error } = await window.supabase
+                .from('points_records')
+                .insert({
+                    record_id: recordData.recordId || generateId(),
+                    phone: recordData.phone,
+                    type: recordData.type || 'earn', // earn 或 spend
+                    points: recordData.points,
+                    reason: recordData.reason,
+                    category: recordData.category || 'other',
+                    create_time: recordData.time || new Date().toISOString()
+                })
+                .select()
+                .single();
+            
+            if (error) throw error;
+            return data;
+        } catch (error) {
+            console.error('添加积分记录失败:', error);
+            throw error;
+        }
+    },
+    
+    // 获取积分记录
+    async getPointsRecords(phone, limit = 50) {
+        try {
+            const { data, error } = await window.supabase
+                .from('points_records')
+                .select('*')
+                .eq('phone', phone)
+                .order('create_time', { ascending: false })
+                .limit(limit);
+            
+            if (error) throw error;
+            
+            return (data || []).map(record => ({
+                recordId: record.record_id,
+                phone: record.phone,
+                type: record.type,
+                points: parseInt(record.points),
+                reason: record.reason,
+                category: record.category,
+                time: record.create_time || record.created_at
+            }));
+        } catch (error) {
+            console.error('获取积分记录失败:', error);
+            return [];
+        }
+    }
+};
+
+// ============================================
 // 导出 API 对象
 // ============================================
 
@@ -687,5 +809,6 @@ window.OrderAPI = OrderAPI;
 window.CommunityAPI = CommunityAPI;
 window.NotificationAPI = NotificationAPI;
 window.InviteAPI = InviteAPI;
+window.PointsAPI = PointsAPI;
 
 console.log('✅ Supabase API 封装层已加载');
