@@ -18,6 +18,9 @@ function generateId() {
     return 'id_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
 }
 
+// 暴露为全局函数，供其他文件使用
+window.generateId = generateId;
+
 // 获取当前用户手机号
 function getCurrentUserPhone() {
     const userStr = localStorage.getItem('currentUser');
@@ -565,6 +568,116 @@ const NotificationAPI = {
 };
 
 // ============================================
+// 邀请相关 API
+// ============================================
+
+const InviteAPI = {
+    // 获取或创建邀请码
+    async getInviteCode(phone) {
+        try {
+            // 先查找是否已有邀请码
+            const { data, error } = await window.supabase
+                .from('invite_codes')
+                .select('*')
+                .eq('phone', phone)
+                .single();
+            
+            if (error && error.code !== 'PGRST116') throw error;
+            
+            if (data) {
+                return data.invite_code;
+            }
+            
+            // 如果没有，生成新的邀请码
+            const code = 'INV' + phone.slice(-4) + Date.now().toString(36).toUpperCase().slice(-6);
+            
+            // 保存到数据库
+            const { data: newData, error: insertError } = await window.supabase
+                .from('invite_codes')
+                .insert({
+                    phone: phone,
+                    invite_code: code
+                })
+                .select()
+                .single();
+            
+            if (insertError) throw insertError;
+            
+            return code;
+        } catch (error) {
+            console.error('获取邀请码失败:', error);
+            throw error;
+        }
+    },
+    
+    // 根据邀请码查找邀请人
+    async getInviterByCode(code) {
+        try {
+            const { data, error } = await window.supabase
+                .from('invite_codes')
+                .select('phone')
+                .eq('invite_code', code)
+                .single();
+            
+            if (error && error.code !== 'PGRST116') throw error;
+            
+            return data ? data.phone : null;
+        } catch (error) {
+            console.error('查找邀请人失败:', error);
+            return null;
+        }
+    },
+    
+    // 获取邀请记录
+    async getInviteRecords(phone) {
+        try {
+            const { data, error } = await window.supabase
+                .from('invite_records')
+                .select('*')
+                .eq('inviter_phone', phone)
+                .order('create_time', { ascending: false });
+            
+            if (error) throw error;
+            
+            return (data || []).map(record => ({
+                recordId: record.record_id,
+                inviterPhone: record.inviter_phone,
+                inviteePhone: record.invitee_phone,
+                inviteCode: record.invite_code,
+                status: record.status,
+                inviteTime: record.create_time || record.created_at
+            }));
+        } catch (error) {
+            console.error('获取邀请记录失败:', error);
+            return [];
+        }
+    },
+    
+    // 创建邀请记录
+    async createInviteRecord(recordData) {
+        try {
+            const { data, error } = await window.supabase
+                .from('invite_records')
+                .insert({
+                    record_id: recordData.recordId || generateId(),
+                    inviter_phone: recordData.inviterPhone,
+                    invitee_phone: recordData.inviteePhone,
+                    invite_code: recordData.inviteCode,
+                    status: recordData.status || 'completed'
+                })
+                .select()
+                .single();
+            
+            if (error) throw error;
+            return data;
+        } catch (error) {
+            console.error('创建邀请记录失败:', error);
+            throw error;
+        }
+    }
+};
+
+// ============================================
 // 导出 API 对象
 // ============================================
 
@@ -573,5 +686,6 @@ window.MembershipAPI = MembershipAPI;
 window.OrderAPI = OrderAPI;
 window.CommunityAPI = CommunityAPI;
 window.NotificationAPI = NotificationAPI;
+window.InviteAPI = InviteAPI;
 
 console.log('✅ Supabase API 封装层已加载');

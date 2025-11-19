@@ -3874,6 +3874,35 @@ async function handleLogin() {
                 registerTime: user.registerTime
             };
             
+            // 从数据库加载会员信息
+            try {
+                const membership = await MembershipAPI.getUserMembership(phone);
+                if (membership) {
+                    currentUser.membership = {
+                        planId: membership.planId,
+                        planName: membership.planName,
+                        expiryDate: membership.expiryDate,
+                        isExpired: membership.expiryDate ? new Date(membership.expiryDate) < new Date() : false
+                    };
+                } else {
+                    currentUser.membership = {
+                        planId: 'free',
+                        planName: '免费版',
+                        expiryDate: null,
+                        isExpired: false
+                    };
+                }
+            } catch (error) {
+                console.error('加载会员信息失败:', error);
+                // 如果失败，使用默认免费用户
+                currentUser.membership = {
+                    planId: 'free',
+                    planName: '免费版',
+                    expiryDate: null,
+                    isExpired: false
+                };
+            }
+            
             // 保存登录状态到 localStorage（用于前端状态管理）
             localStorage.setItem('currentUser', JSON.stringify(currentUser));
             
@@ -3889,6 +3918,10 @@ async function handleLogin() {
             setTimeout(() => {
                 if (typeof updateAdminNav === 'function') {
                     updateAdminNav();
+                }
+                // 更新会员状态显示
+                if (typeof window.updateMembershipStatus === 'function') {
+                    window.updateMembershipStatus();
                 }
             }, 100);
             
@@ -4452,11 +4485,17 @@ async function setUserMembership(planId, expiryDate) {
             planId: planId,
             planName: membershipPlans[planId]?.name || '免费版',
             expiryDate: expiryDate,
-            purchaseTime: new Date().toISOString()
+            purchaseTime: new Date().toISOString(),
+            isExpired: expiryDate ? new Date(expiryDate) < new Date() : false
         };
         
         // 保存到localStorage（用于前端状态管理）
         localStorage.setItem('currentUser', JSON.stringify(currentUser));
+        
+        // 触发会员状态更新
+        if (typeof window.updateMembershipStatus === 'function') {
+            window.updateMembershipStatus();
+        }
     } catch (error) {
         console.error('设置会员状态失败:', error);
         showMessage('设置会员状态失败，请稍后重试');
@@ -4548,6 +4587,13 @@ async function getUserMembership(phone = null) {
         const expiryDate = membership.expiryDate ? new Date(membership.expiryDate) : null;
         const isExpired = expiryDate ? expiryDate < new Date() : false;
         
+        console.log('📦 从 localStorage 获取会员信息:', {
+            planId: membership.planId,
+            planName: membership.planName,
+            expiryDate: membership.expiryDate,
+            isExpired: isExpired
+        });
+        
         return {
             planId: membership.planId || 'free',
             planName: membership.planName || '免费版',
@@ -4556,8 +4602,35 @@ async function getUserMembership(phone = null) {
         };
     }
     
-    // 如果localStorage没有，返回默认值
-    // 注意：如果需要从数据库获取，需要调用方使用await
+    // 如果localStorage没有，尝试从数据库加载（异步，但不等待）
+    // 注意：这里返回默认值，但会在后台更新
+    if (currentUser && currentUser.phone) {
+        console.log('⚠️ localStorage 没有会员信息，尝试从数据库加载...');
+        // 异步加载会员信息并更新 currentUser（不阻塞）
+        MembershipAPI.getUserMembership(currentUser.phone).then(membership => {
+            if (membership) {
+                console.log('✅ 从数据库加载会员信息成功:', membership);
+                currentUser.membership = {
+                    planId: membership.planId,
+                    planName: membership.planName,
+                    expiryDate: membership.expiryDate,
+                    isExpired: membership.expiryDate ? new Date(membership.expiryDate) < new Date() : false
+                };
+                localStorage.setItem('currentUser', JSON.stringify(currentUser));
+                // 触发页面更新（如果正在查看社区页面）
+                if (typeof window.initializeCommunity === 'function') {
+                    window.initializeCommunity();
+                }
+            } else {
+                console.log('ℹ️ 数据库中没有会员信息，使用免费用户');
+            }
+        }).catch(err => {
+            console.warn('❌ 后台加载会员信息失败:', err);
+        });
+    }
+    
+    // 返回默认值（免费用户）
+    console.log('📦 返回默认免费用户信息');
     return {
         planId: 'free',
         planName: '免费版',
@@ -4568,7 +4641,19 @@ async function getUserMembership(phone = null) {
 
 // 检查会员权限
 window.checkMembershipPermission = function(feature) {
+    // 确保 currentUser 已加载
+    if (!currentUser && checkLoginStatus()) {
+        // currentUser 应该已经通过 checkLoginStatus 加载了
+    }
+    
     const membership = getUserMembership();
+    
+    // 调试日志
+    console.log('🔍 检查会员权限:', {
+        feature: feature,
+        membership: membership,
+        currentUser: currentUser ? { phone: currentUser.phone, hasMembership: !!currentUser.membership } : null
+    });
     
     // 如果会员已过期，降级为免费用户
     if (membership.isExpired && membership.planId !== 'free') {
@@ -4930,12 +5015,27 @@ if (typeof window !== 'undefined') {
 }
 
 // 更新会员权限检查函数，添加新功能权限
+// 注意：这个函数会覆盖之前的定义，所以需要包含所有逻辑
 const originalCheckMembershipPermission = window.checkMembershipPermission;
 window.checkMembershipPermission = function(feature) {
+    // 确保 currentUser 已加载
+    if (!currentUser && checkLoginStatus()) {
+        // currentUser 应该已经通过 checkLoginStatus 加载了
+    }
+    
     const membership = getUserMembership();
     
+    // 调试日志
+    console.log('🔍 检查会员权限 (扩展版):', {
+        feature: feature,
+        membership: membership,
+        currentUser: currentUser ? { phone: currentUser.phone, hasMembership: !!currentUser.membership } : null
+    });
+    
+    // 如果会员已过期，降级为免费用户
     if (membership.isExpired && membership.planId !== 'free') {
         setUserMembership('free', null);
+        return false;
     }
     
     // 免费用户权限
@@ -4965,9 +5065,11 @@ window.checkMembershipPermission = function(feature) {
     
     // VIP会员权限（包含所有功能）
     if (membership.planId === 'vip' || membership.planId === 'annual') {
-        return true;
+        console.log('✅ VIP会员，拥有所有权限');
+        return true; // VIP拥有所有权限
     }
     
+    console.log('❌ 未匹配的会员类型:', membership.planId);
     return false;
 };
 
@@ -4977,19 +5079,104 @@ let currentCommunityFilter = { category: '', sort: 'latest', search: '' };
 let uploadedImages = [];
 
 // 初始化社区功能
-window.initializeCommunity = function() {
+window.initializeCommunity = async function() {
+    // 确保 currentUser 已加载
+    if (!currentUser) {
+        checkLoginStatus();
+    }
+    
+    // 如果用户已登录，确保会员信息已加载（无论是否存在都重新加载，确保最新）
+    if (checkLoginStatus() && currentUser && currentUser.phone) {
+        console.log('🔄 初始化社区：检查会员信息...', {
+            phone: currentUser.phone,
+            hasMembership: !!currentUser.membership,
+            membership: currentUser.membership
+        });
+        
+        try {
+            const membership = await MembershipAPI.getUserMembership(currentUser.phone);
+            console.log('📥 从数据库获取的会员信息:', membership);
+            
+            if (membership) {
+                currentUser.membership = {
+                    planId: membership.planId,
+                    planName: membership.planName,
+                    expiryDate: membership.expiryDate,
+                    isExpired: membership.expiryDate ? new Date(membership.expiryDate) < new Date() : false
+                };
+                localStorage.setItem('currentUser', JSON.stringify(currentUser));
+                console.log('✅ 会员信息已更新到 localStorage:', currentUser.membership);
+            } else {
+                // 如果没有会员信息，设置为免费用户
+                currentUser.membership = {
+                    planId: 'free',
+                    planName: '免费版',
+                    expiryDate: null,
+                    isExpired: false
+                };
+                localStorage.setItem('currentUser', JSON.stringify(currentUser));
+                console.log('ℹ️ 没有会员信息，设置为免费用户');
+            }
+        } catch (error) {
+            console.error('❌ 加载会员信息失败:', error);
+        }
+    }
+    
     // 检查会员权限，显示/隐藏发布功能
     const postCard = document.getElementById('communityPostCard');
     const imageUploadSection = document.getElementById('imageUploadSection');
     const postMemberBadge = document.getElementById('postMemberBadge');
     
-    if (checkMembershipPermission('post_community')) {
-        if (postCard) postCard.style.display = 'block';
+    // 再次确保 currentUser 已加载（因为可能在其他地方被修改）
+    if (!currentUser) {
+        checkLoginStatus();
+    }
+    
+    // 检查权限
+    const hasPostPermission = checkMembershipPermission('post_community');
+    console.log('🔐 社区权限检查结果:', {
+        hasPostPermission: hasPostPermission,
+        currentUser: currentUser ? { phone: currentUser.phone, membership: currentUser.membership } : null
+    });
+    
+    if (hasPostPermission) {
+        console.log('✅ 用户有发布权限，显示发布界面');
+        if (postCard) {
+            postCard.style.display = 'block';
+            const postBody = postCard.querySelector('.post-body');
+            if (postBody) {
+                // 恢复正常的发布界面
+                const postContent = document.getElementById('postContent');
+                if (!postContent) {
+                    postBody.innerHTML = `
+                        <textarea id="postContent" class="form-control" rows="3" placeholder="分享你的想法..."></textarea>
+                        <div class="mt-2 d-flex justify-content-between align-items-center">
+                            <small class="text-muted"><span id="postCharCount">0</span>/500</small>
+                            <button class="btn btn-primary btn-sm" onclick="window.addPost()">发布</button>
+                        </div>
+                    `;
+                    // 绑定字符计数事件
+                    if (typeof updatePostCharCount === 'function') {
+                        const textarea = document.getElementById('postContent');
+                        if (textarea) {
+                            textarea.addEventListener('input', function() {
+                                updatePostCharCount(this.value);
+                            });
+                        }
+                    }
+                } else {
+                    // 如果 postContent 已存在，确保它可见
+                    postBody.innerHTML = '';
+                    postBody.appendChild(postContent);
+                }
+            }
+        }
         if (imageUploadSection && checkMembershipPermission('upload_image')) {
             imageUploadSection.style.display = 'block';
         }
         if (postMemberBadge) postMemberBadge.style.display = 'none';
     } else {
+        console.log('❌ 用户没有发布权限，显示提示信息');
         if (postCard) {
             postCard.style.display = 'block';
             const postBody = postCard.querySelector('.post-body');
@@ -5005,46 +5192,61 @@ window.initializeCommunity = function() {
         if (postMemberBadge) postMemberBadge.style.display = 'inline';
     }
     
-    // 加载帖子
-    loadCommunityPosts();
+    // 加载帖子（现在是异步的）
+    await loadCommunityPosts();
 };
 
 // 加载社区帖子
-function loadCommunityPosts() {
-    const savedPosts = localStorage.getItem('communityPosts');
-    if (savedPosts) {
-        try {
-            communityPosts = JSON.parse(savedPosts);
-        } catch (e) {
-            communityPosts = [];
-        }
-    } else {
-        // 初始化默认帖子
-        communityPosts = [
-            {
-                id: '1',
+async function loadCommunityPosts() {
+    try {
+        // 使用 Supabase API 获取帖子
+        const posts = await CommunityAPI.getAllPosts();
+        communityPosts = posts;
+        
+        // 如果数据库为空，创建默认帖子（仅首次）
+        if (communityPosts.length === 0) {
+            const defaultPost = {
+                id: generateId(),
                 author: '星座达人',
                 authorId: 'demo_user_1',
-                avatar: '⭐',
                 content: '今天白羊座运势不错，适合开展新计划！',
                 category: 'daily',
-                time: new Date().toLocaleString('zh-CN'),
-                likes: 15,
-                comments: 3,
                 images: [],
                 status: 'approved',
-                createTime: new Date().toISOString()
+                time: new Date().toISOString()
+            };
+            
+            try {
+                await CommunityAPI.createPost(defaultPost);
+                communityPosts = await CommunityAPI.getAllPosts();
+            } catch (error) {
+                console.warn('创建默认帖子失败:', error);
+                // 如果失败，使用空数组
+                communityPosts = [];
             }
-        ];
-        saveCommunityPosts();
+        }
+    } catch (error) {
+        console.error('加载帖子失败:', error);
+        // 如果 Supabase 失败，尝试从 localStorage 加载（作为备份）
+        const savedPosts = localStorage.getItem('communityPosts');
+        if (savedPosts) {
+            try {
+                communityPosts = JSON.parse(savedPosts);
+            } catch (e) {
+                communityPosts = [];
+            }
+        } else {
+            communityPosts = [];
+        }
     }
     
     displayCommunityPosts();
     updateHotTopics(); // 更新热门话题
 }
 
-// 保存社区帖子
+// 保存社区帖子（保留作为备份，主要使用 Supabase）
 function saveCommunityPosts() {
+    // 同时保存到 localStorage 作为备份
     localStorage.setItem('communityPosts', JSON.stringify(communityPosts));
 }
 
@@ -5282,7 +5484,7 @@ window.removeImage = function(index) {
 
 // 更新addPost函数以支持新功能
 const originalAddPost = window.addPost;
-window.addPost = function() {
+window.addPost = async function() {
     // 检查会员权限
     if (!checkMembershipPermission('post_community')) {
         showMessage('发布帖子需要基础会员及以上权限，请先开通会员');
@@ -5312,50 +5514,67 @@ window.addPost = function() {
         return;
     }
     
-    const post = {
+    const postData = {
         id: 'POST' + Date.now(),
         author: currentUser?.nickname || userProfile?.nickname || '匿名用户',
         authorId: currentUser?.phone || 'anonymous',
-        avatar: currentUser?.zodiac ? zodiacData.find(z => z.id === currentUser.zodiac)?.icon || '👤' : '👤',
         content: content.value.trim(),
         category: category?.value || 'other',
-        time: new Date().toLocaleString('zh-CN'),
-        likes: 0,
-        comments: 0,
         images: [...uploadedImages],
         status: 'approved', // 审核状态：pending(审核中), approved(已通过), rejected(未通过)
-        createTime: new Date().toISOString()
+        time: new Date().toISOString()
     };
     
-    communityPosts.unshift(post);
-    saveCommunityPosts();
-    
-    // 更新热门话题
-    updateHotTopics();
-    
-    // 清空输入
-    content.value = '';
-    uploadedImages = [];
-    const preview = document.getElementById('imagePreview');
-    if (preview) preview.innerHTML = '';
-    updatePostCharCount('');
-    
-    showMessage('发布成功！');
-    displayCommunityPosts();
+    try {
+        // 使用 Supabase API 创建帖子
+        await CommunityAPI.createPost(postData);
+        
+        // 重新加载帖子列表
+        await loadCommunityPosts();
+        
+        // 更新热门话题
+        updateHotTopics();
+        
+        // 清空输入
+        content.value = '';
+        uploadedImages = [];
+        const preview = document.getElementById('imagePreview');
+        if (preview) preview.innerHTML = '';
+        updatePostCharCount('');
+        
+        showMessage('发布成功！');
+    } catch (error) {
+        console.error('发布帖子失败:', error);
+        showMessage('发布失败，请稍后重试');
+    }
 };
 
 // 点赞帖子
-window.likePost = function(postId) {
+window.likePost = async function(postId) {
     const post = communityPosts.find(p => p.id === postId);
     if (post) {
-        post.likes = (post.likes || 0) + 1;
-        saveCommunityPosts();
-        displayCommunityPosts();
+        try {
+            // 使用 Supabase API 更新点赞数
+            await CommunityAPI.updatePost(postId, {
+                likes: (post.likes || 0) + 1
+            });
+            
+            // 更新本地数据
+            post.likes = (post.likes || 0) + 1;
+            saveCommunityPosts();
+            displayCommunityPosts();
+        } catch (error) {
+            console.error('点赞失败:', error);
+            // 如果失败，仍然更新本地显示（降级处理）
+            post.likes = (post.likes || 0) + 1;
+            saveCommunityPosts();
+            displayCommunityPosts();
+        }
     }
 };
 
 // 评论帖子
-window.commentPost = function(postId) {
+window.commentPost = async function(postId) {
     const comment = prompt('请输入您的评论：');
     if (comment && comment.trim()) {
         // 内容审核
@@ -5367,21 +5586,43 @@ window.commentPost = function(postId) {
         
         const post = communityPosts.find(p => p.id === postId);
         if (post) {
-            post.comments = (post.comments || 0) + 1;
-            saveCommunityPosts();
-            displayCommunityPosts();
-            showMessage('评论成功！');
-            
-            // 如果评论的是其他用户的帖子，发送互动消息
-            if (checkLoginStatus() && currentUser && post.authorId && post.authorId !== currentUser.phone) {
-                if (typeof window.createInteractionNotification === 'function') {
-                    window.createInteractionNotification(
-                        '有人评论了您的帖子',
-                        `${currentUser.nickname}评论了您的帖子："${comment.substring(0, 20)}${comment.length > 20 ? '...' : ''}"`,
-                        '查看详情',
-                        `showPage('community')`
-                    );
+            try {
+                // 使用 Supabase API 创建评论
+                const commentData = {
+                    id: 'COMMENT' + Date.now(),
+                    postId: postId,
+                    author: currentUser?.nickname || '匿名用户',
+                    authorId: currentUser?.phone || 'anonymous',
+                    content: comment.trim(),
+                    time: new Date().toISOString()
+                };
+                
+                await CommunityAPI.createComment(commentData);
+                
+                // 更新本地数据
+                post.comments = (post.comments || 0) + 1;
+                saveCommunityPosts();
+                displayCommunityPosts();
+                showMessage('评论成功！');
+                
+                // 如果评论的是其他用户的帖子，发送互动消息
+                if (checkLoginStatus() && currentUser && post.authorId && post.authorId !== currentUser.phone) {
+                    if (typeof NotificationAPI !== 'undefined' && NotificationAPI.createNotification) {
+                        await NotificationAPI.createNotification({
+                            phone: post.authorId,
+                            type: 'interaction',
+                            title: '有人评论了您的帖子',
+                            content: `${currentUser.nickname}评论了您的帖子："${comment.substring(0, 20)}${comment.length > 20 ? '...' : ''}"`
+                        });
+                    }
                 }
+            } catch (error) {
+                console.error('评论失败:', error);
+                // 如果失败，仍然更新本地显示（降级处理）
+                post.comments = (post.comments || 0) + 1;
+                saveCommunityPosts();
+                displayCommunityPosts();
+                showMessage('评论成功！');
             }
         }
     }
@@ -5677,10 +5918,12 @@ window.sendReplyMessage = function(userId, userName) {
 };
 
 // 更新initializeCommunity以加载关注和私信数据
+// 扩展 initializeCommunity 函数（保留原有功能）
 const originalInitializeCommunityForExt = window.initializeCommunity;
-window.initializeCommunity = function() {
+window.initializeCommunity = async function() {
+    // 先调用原有函数（现在是 async）
     if (originalInitializeCommunityForExt) {
-        originalInitializeCommunityForExt();
+        await originalInitializeCommunityForExt();
     }
     
     // 加载用户关注列表
@@ -5888,9 +6131,9 @@ const NotificationTypes = {
 };
 
 // 初始化消息通知系统
-window.initializeNotifications = function() {
-    // 加载消息
-    loadNotifications();
+window.initializeNotifications = async function() {
+    // 加载消息（现在是异步的）
+    await loadNotifications();
     
     // 检查会员到期提醒
     checkMemberExpiryReminder();
@@ -5903,18 +6146,29 @@ window.initializeNotifications = function() {
 };
 
 // 加载消息通知
-function loadNotifications() {
-    const savedNotifications = localStorage.getItem('userNotifications');
-    if (savedNotifications) {
-        try {
-            notifications = JSON.parse(savedNotifications);
-        } catch (e) {
-            notifications = [];
-        }
-    } else {
-        // 初始化默认系统公告
-        notifications = [
-            {
+async function loadNotifications() {
+    if (!checkLoginStatus() || !currentUser || !currentUser.phone) {
+        notifications = [];
+        return;
+    }
+    
+    try {
+        // 使用 Supabase API 获取通知
+        const data = await NotificationAPI.getUserNotifications(currentUser.phone);
+        notifications = data.map(notif => ({
+            id: notif.id,
+            type: notif.type,
+            title: notif.title,
+            content: notif.content,
+            time: notif.time,
+            read: notif.isRead,
+            icon: getNotificationIcon(notif.type),
+            color: getNotificationColor(notif.type)
+        }));
+        
+        // 如果数据库为空，创建默认系统公告（仅首次）
+        if (notifications.length === 0) {
+            const defaultNotif = {
                 id: 'NOTIF_' + Date.now(),
                 type: NotificationTypes.SYSTEM,
                 title: '欢迎使用星座运势网站',
@@ -5923,14 +6177,77 @@ function loadNotifications() {
                 read: false,
                 icon: 'bi-megaphone',
                 color: 'primary'
+            };
+            
+            try {
+                await NotificationAPI.createNotification({
+                    id: defaultNotif.id,
+                    phone: currentUser.phone,
+                    type: defaultNotif.type,
+                    title: defaultNotif.title,
+                    content: defaultNotif.content,
+                    isRead: false
+                });
+                notifications = await NotificationAPI.getUserNotifications(currentUser.phone);
+                notifications = notifications.map(notif => ({
+                    id: notif.id,
+                    type: notif.type,
+                    title: notif.title,
+                    content: notif.content,
+                    time: notif.time,
+                    read: notif.isRead,
+                    icon: getNotificationIcon(notif.type),
+                    color: getNotificationColor(notif.type)
+                }));
+            } catch (error) {
+                console.warn('创建默认通知失败:', error);
+                notifications = [];
             }
-        ];
-        saveNotifications();
+        }
+    } catch (error) {
+        console.error('加载通知失败:', error);
+        // 如果 Supabase 失败，尝试从 localStorage 加载（作为备份）
+        const savedNotifications = localStorage.getItem('userNotifications');
+        if (savedNotifications) {
+            try {
+                notifications = JSON.parse(savedNotifications);
+            } catch (e) {
+                notifications = [];
+            }
+        } else {
+            notifications = [];
+        }
     }
+    
+    // 同时保存到 localStorage 作为备份
+    saveNotifications();
 }
 
-// 保存消息通知
+// 获取通知图标
+function getNotificationIcon(type) {
+    const icons = {
+        [NotificationTypes.SYSTEM]: 'bi-megaphone',
+        [NotificationTypes.ACTIVITY]: 'bi-gift',
+        [NotificationTypes.MEMBER]: 'bi-star',
+        [NotificationTypes.INTERACTION]: 'bi-chat-heart'
+    };
+    return icons[type] || 'bi-bell';
+}
+
+// 获取通知颜色
+function getNotificationColor(type) {
+    const colors = {
+        [NotificationTypes.SYSTEM]: 'primary',
+        [NotificationTypes.ACTIVITY]: 'success',
+        [NotificationTypes.MEMBER]: 'warning',
+        [NotificationTypes.INTERACTION]: 'info'
+    };
+    return colors[type] || 'primary';
+}
+
+// 保存消息通知（保留作为备份，主要使用 Supabase）
 function saveNotifications() {
+    // 同时保存到 localStorage 作为备份
     localStorage.setItem('userNotifications', JSON.stringify(notifications));
 }
 
@@ -6083,50 +6400,119 @@ window.filterNotifications = function(type) {
 };
 
 // 查看消息（标记为已读）
-window.viewNotification = function(id) {
+window.viewNotification = async function(id) {
     const notif = notifications.find(n => n.id === id);
-    if (notif) {
-        notif.read = true;
-        saveNotifications();
-        displayNotifications();
-        updateNotificationBadge();
+    if (notif && !notif.read) {
+        try {
+            // 使用 Supabase API 标记为已读
+            await NotificationAPI.markAsRead(id);
+            notif.read = true;
+            saveNotifications();
+            displayNotifications();
+            updateNotificationBadge();
+        } catch (error) {
+            console.error('标记通知已读失败:', error);
+            // 如果失败，仍然更新本地显示（降级处理）
+            notif.read = true;
+            saveNotifications();
+            displayNotifications();
+            updateNotificationBadge();
+        }
     }
 };
 
 // 删除消息
-window.deleteNotification = function(id) {
+window.deleteNotification = async function(id) {
     if (confirm('确定要删除这条消息吗？')) {
-        notifications = notifications.filter(n => n.id !== id);
-        saveNotifications();
-        displayNotifications();
-        updateNotificationBadge();
+        try {
+            // 使用 Supabase API 删除通知
+            await NotificationAPI.deleteNotification(id);
+            notifications = notifications.filter(n => n.id !== id);
+            saveNotifications();
+            displayNotifications();
+            updateNotificationBadge();
+        } catch (error) {
+            console.error('删除通知失败:', error);
+            // 如果失败，仍然更新本地显示（降级处理）
+            notifications = notifications.filter(n => n.id !== id);
+            saveNotifications();
+            displayNotifications();
+            updateNotificationBadge();
+        }
     }
 };
 
 // 标记全部已读
-window.markAllAsRead = function() {
-    notifications.forEach(n => n.read = true);
-    saveNotifications();
-    displayNotifications();
-    updateNotificationBadge();
-    showMessage('已标记全部消息为已读');
-};
-
-// 清空所有消息
-window.clearAllNotifications = function() {
-    if (confirm('确定要清空所有消息吗？此操作不可恢复。')) {
-        notifications = [];
+window.markAllAsRead = async function() {
+    try {
+        // 批量标记所有未读通知为已读
+        const unreadNotifications = notifications.filter(n => !n.read);
+        for (const notif of unreadNotifications) {
+            try {
+                await NotificationAPI.markAsRead(notif.id);
+            } catch (error) {
+                console.warn('标记通知已读失败:', notif.id, error);
+            }
+        }
+        
+        notifications.forEach(n => n.read = true);
         saveNotifications();
         displayNotifications();
         updateNotificationBadge();
-        showMessage('已清空所有消息');
+        showMessage('已标记全部消息为已读');
+    } catch (error) {
+        console.error('批量标记已读失败:', error);
+        // 如果失败，仍然更新本地显示（降级处理）
+        notifications.forEach(n => n.read = true);
+        saveNotifications();
+        displayNotifications();
+        updateNotificationBadge();
+        showMessage('已标记全部消息为已读');
+    }
+};
+
+// 清空所有消息
+window.clearAllNotifications = async function() {
+    if (confirm('确定要清空所有消息吗？此操作不可恢复。')) {
+        try {
+            // 批量删除所有通知
+            const allIds = notifications.map(n => n.id);
+            for (const id of allIds) {
+                try {
+                    await NotificationAPI.deleteNotification(id);
+                } catch (error) {
+                    console.warn('删除通知失败:', id, error);
+                }
+            }
+            
+            notifications = [];
+            saveNotifications();
+            displayNotifications();
+            updateNotificationBadge();
+            showMessage('已清空所有消息');
+        } catch (error) {
+            console.error('清空通知失败:', error);
+            // 如果失败，仍然更新本地显示（降级处理）
+            notifications = [];
+            saveNotifications();
+            displayNotifications();
+            updateNotificationBadge();
+            showMessage('已清空所有消息');
+        }
     }
 };
 
 // 创建系统公告
-window.createSystemNotification = function(title, content) {
+window.createSystemNotification = async function(title, content, phone = null) {
+    const targetPhone = phone || (currentUser && currentUser.phone);
+    if (!targetPhone) {
+        console.warn('无法创建系统通知：没有目标用户');
+        return;
+    }
+    
+    const notifId = 'NOTIF_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
     const notif = {
-        id: 'NOTIF_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9),
+        id: notifId,
         type: NotificationTypes.SYSTEM,
         title: title,
         content: content,
@@ -6136,10 +6522,34 @@ window.createSystemNotification = function(title, content) {
         color: 'primary'
     };
     
-    notifications.unshift(notif);
-    saveNotifications();
-    displayNotifications();
-    updateNotificationBadge();
+    try {
+        // 使用 Supabase API 创建通知
+        await NotificationAPI.createNotification({
+            id: notifId,
+            phone: targetPhone,
+            type: NotificationTypes.SYSTEM,
+            title: title,
+            content: content,
+            isRead: false
+        });
+        
+        // 如果是当前用户的通知，更新本地列表
+        if (targetPhone === currentUser?.phone) {
+            notifications.unshift(notif);
+            saveNotifications();
+            displayNotifications();
+            updateNotificationBadge();
+        }
+    } catch (error) {
+        console.error('创建系统通知失败:', error);
+        // 如果失败，仍然更新本地显示（降级处理）
+        if (targetPhone === currentUser?.phone) {
+            notifications.unshift(notif);
+            saveNotifications();
+            displayNotifications();
+            updateNotificationBadge();
+        }
+    }
     
     // 如果用户在消息页面，刷新显示
     if (typeof window.showPage === 'function') {
@@ -6151,9 +6561,16 @@ window.createSystemNotification = function(title, content) {
 };
 
 // 创建活动推送
-window.createActivityNotification = function(title, content, actionText, action) {
+window.createActivityNotification = async function(title, content, actionText, action, phone = null) {
+    const targetPhone = phone || (currentUser && currentUser.phone);
+    if (!targetPhone) {
+        console.warn('无法创建活动通知：没有目标用户');
+        return;
+    }
+    
+    const notifId = 'NOTIF_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
     const notif = {
-        id: 'NOTIF_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9),
+        id: notifId,
         type: NotificationTypes.ACTIVITY,
         title: title,
         content: content,
@@ -6166,16 +6583,47 @@ window.createActivityNotification = function(title, content, actionText, action)
         actionColor: 'success'
     };
     
-    notifications.unshift(notif);
-    saveNotifications();
-    displayNotifications();
-    updateNotificationBadge();
+    try {
+        // 使用 Supabase API 创建通知
+        await NotificationAPI.createNotification({
+            id: notifId,
+            phone: targetPhone,
+            type: NotificationTypes.ACTIVITY,
+            title: title,
+            content: content,
+            isRead: false
+        });
+        
+        // 如果是当前用户的通知，更新本地列表
+        if (targetPhone === currentUser?.phone) {
+            notifications.unshift(notif);
+            saveNotifications();
+            displayNotifications();
+            updateNotificationBadge();
+        }
+    } catch (error) {
+        console.error('创建活动通知失败:', error);
+        // 如果失败，仍然更新本地显示（降级处理）
+        if (targetPhone === currentUser?.phone) {
+            notifications.unshift(notif);
+            saveNotifications();
+            displayNotifications();
+            updateNotificationBadge();
+        }
+    }
 };
 
 // 创建会员提醒
-window.createMemberNotification = function(title, content, actionText, action) {
+window.createMemberNotification = async function(title, content, actionText, action, phone = null) {
+    const targetPhone = phone || (currentUser && currentUser.phone);
+    if (!targetPhone) {
+        console.warn('无法创建会员通知：没有目标用户');
+        return;
+    }
+    
+    const notifId = 'NOTIF_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
     const notif = {
-        id: 'NOTIF_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9),
+        id: notifId,
         type: NotificationTypes.MEMBER,
         title: title,
         content: content,
@@ -6188,16 +6636,47 @@ window.createMemberNotification = function(title, content, actionText, action) {
         actionColor: 'warning'
     };
     
-    notifications.unshift(notif);
-    saveNotifications();
-    displayNotifications();
-    updateNotificationBadge();
+    try {
+        // 使用 Supabase API 创建通知
+        await NotificationAPI.createNotification({
+            id: notifId,
+            phone: targetPhone,
+            type: NotificationTypes.MEMBER,
+            title: title,
+            content: content,
+            isRead: false
+        });
+        
+        // 如果是当前用户的通知，更新本地列表
+        if (targetPhone === currentUser?.phone) {
+            notifications.unshift(notif);
+            saveNotifications();
+            displayNotifications();
+            updateNotificationBadge();
+        }
+    } catch (error) {
+        console.error('创建会员通知失败:', error);
+        // 如果失败，仍然更新本地显示（降级处理）
+        if (targetPhone === currentUser?.phone) {
+            notifications.unshift(notif);
+            saveNotifications();
+            displayNotifications();
+            updateNotificationBadge();
+        }
+    }
 };
 
 // 创建互动消息
-window.createInteractionNotification = function(title, content, actionText, action) {
+window.createInteractionNotification = async function(title, content, actionText, action, phone = null) {
+    const targetPhone = phone || (currentUser && currentUser.phone);
+    if (!targetPhone) {
+        console.warn('无法创建互动通知：没有目标用户');
+        return;
+    }
+    
+    const notifId = 'NOTIF_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
     const notif = {
-        id: 'NOTIF_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9),
+        id: notifId,
         type: NotificationTypes.INTERACTION,
         title: title,
         content: content,
@@ -6210,10 +6689,34 @@ window.createInteractionNotification = function(title, content, actionText, acti
         actionColor: 'info'
     };
     
-    notifications.unshift(notif);
-    saveNotifications();
-    displayNotifications();
-    updateNotificationBadge();
+    try {
+        // 使用 Supabase API 创建通知
+        await NotificationAPI.createNotification({
+            id: notifId,
+            phone: targetPhone,
+            type: NotificationTypes.INTERACTION,
+            title: title,
+            content: content,
+            isRead: false
+        });
+        
+        // 如果是当前用户的通知，更新本地列表
+        if (targetPhone === currentUser?.phone) {
+            notifications.unshift(notif);
+            saveNotifications();
+            displayNotifications();
+            updateNotificationBadge();
+        }
+    } catch (error) {
+        console.error('创建互动通知失败:', error);
+        // 如果失败，仍然更新本地显示（降级处理）
+        if (targetPhone === currentUser?.phone) {
+            notifications.unshift(notif);
+            saveNotifications();
+            displayNotifications();
+            updateNotificationBadge();
+        }
+    }
 };
 
 // 检查会员到期提醒
@@ -6328,85 +6831,144 @@ function generateInviteCode() {
 }
 
 // 获取或创建邀请码
-function getInviteCode() {
-    if (!checkLoginStatus()) return null;
+async function getInviteCode() {
+    if (!checkLoginStatus() || !currentUser || !currentUser.phone) return null;
     
-    let inviteCodes = JSON.parse(localStorage.getItem('inviteCodes') || '{}');
-    const phone = currentUser.phone;
-    
-    if (!inviteCodes[phone]) {
-        inviteCodes[phone] = {
-            code: generateInviteCode(),
-            createTime: new Date().toISOString()
-        };
-        localStorage.setItem('inviteCodes', JSON.stringify(inviteCodes));
+    try {
+        // 使用 Supabase API 获取或创建邀请码
+        const code = await InviteAPI.getInviteCode(currentUser.phone);
+        return code;
+    } catch (error) {
+        console.error('获取邀请码失败:', error);
+        // 如果失败，尝试从 localStorage 获取（降级处理）
+        let inviteCodes = JSON.parse(localStorage.getItem('inviteCodes') || '{}');
+        const phone = currentUser.phone;
+        
+        if (!inviteCodes[phone]) {
+            inviteCodes[phone] = {
+                code: generateInviteCode(),
+                createTime: new Date().toISOString()
+            };
+            localStorage.setItem('inviteCodes', JSON.stringify(inviteCodes));
+        }
+        
+        return inviteCodes[phone].code;
     }
-    
-    return inviteCodes[phone].code;
 }
 
 // 初始化邀请页面
-window.initializeInvite = function() {
+window.initializeInvite = async function() {
     if (!checkLoginStatus()) {
         showMessage('请先登录');
         showPage('login');
         return;
     }
     
-    const inviteCode = getInviteCode();
+    const inviteCode = await getInviteCode();
     const inviteLink = window.location.origin + window.location.pathname + '?invite=' + inviteCode;
     
     document.getElementById('inviteCode').value = inviteCode;
     document.getElementById('inviteLink').value = inviteLink;
     
-    // 加载邀请统计
-    loadInviteStats();
-    loadInviteRecords();
+    // 加载邀请统计（现在是异步的）
+    await loadInviteStats();
+    await loadInviteRecords();
 };
 
 // 加载邀请统计
-function loadInviteStats() {
-    const phone = currentUser.phone;
-    const inviteRecords = JSON.parse(localStorage.getItem('inviteRecords') || '[]');
-    const myInvites = inviteRecords.filter(r => r.inviterPhone === phone);
+async function loadInviteStats() {
+    if (!checkLoginStatus() || !currentUser || !currentUser.phone) return;
     
-    const invitedCount = myInvites.length;
-    const pointsEarned = myInvites.reduce((sum, r) => sum + (r.pointsEarned || 0), 0);
-    
-    document.getElementById('invitedCount').textContent = invitedCount;
-    document.getElementById('pointsEarned').textContent = pointsEarned;
+    try {
+        // 使用 Supabase API 获取邀请记录
+        const records = await InviteAPI.getInviteRecords(currentUser.phone);
+        
+        const invitedCount = records.length;
+        // 注意：pointsEarned 需要从积分记录中计算，这里暂时使用固定值
+        const pointsEarned = invitedCount * 100; // 每个邀请奖励100积分
+        
+        document.getElementById('invitedCount').textContent = invitedCount;
+        document.getElementById('pointsEarned').textContent = pointsEarned;
+    } catch (error) {
+        console.error('加载邀请统计失败:', error);
+        // 如果失败，尝试从 localStorage 加载（降级处理）
+        const phone = currentUser.phone;
+        const inviteRecords = JSON.parse(localStorage.getItem('inviteRecords') || '[]');
+        const myInvites = inviteRecords.filter(r => r.inviterPhone === phone);
+        
+        const invitedCount = myInvites.length;
+        const pointsEarned = myInvites.reduce((sum, r) => sum + (r.pointsEarned || 0), 0);
+        
+        document.getElementById('invitedCount').textContent = invitedCount;
+        document.getElementById('pointsEarned').textContent = pointsEarned;
+    }
 }
 
 // 加载邀请记录
-function loadInviteRecords() {
-    const phone = currentUser.phone;
-    const inviteRecords = JSON.parse(localStorage.getItem('inviteRecords') || '[]');
-    const myInvites = inviteRecords.filter(r => r.inviterPhone === phone);
+async function loadInviteRecords() {
+    if (!checkLoginStatus() || !currentUser || !currentUser.phone) return;
     
     const listEl = document.getElementById('inviteRecordsList');
-    if (myInvites.length === 0) {
-        listEl.innerHTML = `
-            <div class="text-center text-muted py-4">
-                <i class="bi bi-inbox" style="font-size: 2rem;"></i>
-                <p class="mt-2">暂无邀请记录</p>
-            </div>
-        `;
-        return;
-    }
+    if (!listEl) return;
     
-    listEl.innerHTML = myInvites.map(record => `
-        <div class="list-group-item">
-            <div class="d-flex justify-content-between align-items-center">
-                <div>
-                    <strong>${record.inviteePhone || '未知用户'}</strong>
-                    <small class="text-muted d-block">${formatTime(record.inviteTime)}</small>
+    try {
+        // 使用 Supabase API 获取邀请记录
+        const records = await InviteAPI.getInviteRecords(currentUser.phone);
+        
+        if (records.length === 0) {
+            listEl.innerHTML = `
+                <div class="text-center text-muted py-4">
+                    <i class="bi bi-inbox" style="font-size: 2rem;"></i>
+                    <p class="mt-2">暂无邀请记录</p>
                 </div>
-                <div class="text-success">
-                    +${record.pointsEarned || 0} 积分
+            `;
+            return;
+        }
+        
+        listEl.innerHTML = records.map(record => `
+            <div class="list-group-item">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <strong>${record.inviteePhone || '未知用户'}</strong>
+                        <small class="text-muted d-block">${formatTime(record.inviteTime)}</small>
+                    </div>
+                    <div class="text-success">
+                        +100 积分
+                    </div>
                 </div>
             </div>
-        </div>
-    `).join('');
+        `).join('');
+    } catch (error) {
+        console.error('加载邀请记录失败:', error);
+        // 如果失败，尝试从 localStorage 加载（降级处理）
+        const phone = currentUser.phone;
+        const inviteRecords = JSON.parse(localStorage.getItem('inviteRecords') || '[]');
+        const myInvites = inviteRecords.filter(r => r.inviterPhone === phone);
+        
+        if (myInvites.length === 0) {
+            listEl.innerHTML = `
+                <div class="text-center text-muted py-4">
+                    <i class="bi bi-inbox" style="font-size: 2rem;"></i>
+                    <p class="mt-2">暂无邀请记录</p>
+                </div>
+            `;
+            return;
+        }
+        
+        listEl.innerHTML = myInvites.map(record => `
+            <div class="list-group-item">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <strong>${record.inviteePhone || '未知用户'}</strong>
+                        <small class="text-muted d-block">${formatTime(record.inviteTime)}</small>
+                    </div>
+                    <div class="text-success">
+                        +${record.pointsEarned || 0} 积分
+                    </div>
+                </div>
+            </div>
+        `).join('');
+    }
 }
 
 // 复制邀请码
@@ -6446,43 +7008,77 @@ function checkInviteCode() {
 }
 
 // 处理邀请注册
-function processInviteRegistration(phone) {
+async function processInviteRegistration(phone) {
     const pendingCode = localStorage.getItem('pendingInviteCode');
     if (!pendingCode) return;
     
-    // 查找邀请人
-    const inviteCodes = JSON.parse(localStorage.getItem('inviteCodes') || '{}');
-    let inviterPhone = null;
-    for (const [p, data] of Object.entries(inviteCodes)) {
-        if (data.code === pendingCode) {
-            inviterPhone = p;
-            break;
+    try {
+        // 使用 Supabase API 查找邀请人
+        const inviterPhone = await InviteAPI.getInviterByCode(pendingCode);
+        
+        if (!inviterPhone) {
+            console.warn('未找到邀请人，邀请码:', pendingCode);
+            localStorage.removeItem('pendingInviteCode');
+            return;
         }
+        
+        // 使用 Supabase API 创建邀请记录
+        await InviteAPI.createInviteRecord({
+            inviterPhone: inviterPhone,
+            inviteePhone: phone,
+            inviteCode: pendingCode,
+            status: 'completed'
+        });
+        
+        // 给邀请人奖励积分
+        if (typeof addPoints === 'function') {
+            addPoints(inviterPhone, 100, '邀请好友奖励', 'invite');
+        }
+        
+        // 给被邀请人奖励积分
+        if (typeof addPoints === 'function') {
+            addPoints(phone, 50, '新用户注册奖励', 'register');
+        }
+        
+        // 清除待处理的邀请码
+        localStorage.removeItem('pendingInviteCode');
+        
+        showMessage('您已通过邀请注册，获得50积分奖励！');
+    } catch (error) {
+        console.error('处理邀请注册失败:', error);
+        // 如果失败，尝试使用 localStorage（降级处理）
+        const inviteCodes = JSON.parse(localStorage.getItem('inviteCodes') || '{}');
+        let inviterPhone = null;
+        for (const [p, data] of Object.entries(inviteCodes)) {
+            if (data.code === pendingCode) {
+                inviterPhone = p;
+                break;
+            }
+        }
+        
+        if (!inviterPhone) {
+            localStorage.removeItem('pendingInviteCode');
+            return;
+        }
+        
+        const inviteRecords = JSON.parse(localStorage.getItem('inviteRecords') || '[]');
+        inviteRecords.push({
+            inviterPhone: inviterPhone,
+            inviteePhone: phone,
+            inviteCode: pendingCode,
+            inviteTime: new Date().toISOString(),
+            pointsEarned: 100
+        });
+        localStorage.setItem('inviteRecords', JSON.stringify(inviteRecords));
+        
+        if (typeof addPoints === 'function') {
+            addPoints(inviterPhone, 100, '邀请好友奖励', 'invite');
+            addPoints(phone, 50, '新用户注册奖励', 'register');
+        }
+        
+        localStorage.removeItem('pendingInviteCode');
+        showMessage('您已通过邀请注册，获得50积分奖励！');
     }
-    
-    if (!inviterPhone) return;
-    
-    // 记录邀请关系
-    const inviteRecords = JSON.parse(localStorage.getItem('inviteRecords') || '[]');
-    inviteRecords.push({
-        inviterPhone: inviterPhone,
-        inviteePhone: phone,
-        inviteCode: pendingCode,
-        inviteTime: new Date().toISOString(),
-        pointsEarned: 100 // 邀请人获得100积分
-    });
-    localStorage.setItem('inviteRecords', JSON.stringify(inviteRecords));
-    
-    // 给邀请人奖励积分
-    addPoints(inviterPhone, 100, '邀请好友奖励', 'invite');
-    
-    // 给被邀请人奖励积分
-    addPoints(phone, 50, '新用户注册奖励', 'register');
-    
-    // 清除待处理的邀请码
-    localStorage.removeItem('pendingInviteCode');
-    
-    showMessage('您已通过邀请注册，获得50积分奖励！');
 }
 
 // ============================================
