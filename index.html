@@ -1,0 +1,2381 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>星座运势 - 探索你的星座奥秘</title>
+    
+    <!-- DNS预解析 -->
+    <link rel="dns-prefetch" href="https://cdn.jsdelivr.net">
+    <link rel="dns-prefetch" href="https://cdn.bootcdn.net">
+    
+    <!-- 预加载关键资源 -->
+    <link rel="preload" href="css/style.css" as="style">
+    <link rel="preload" href="js/main.js" as="script">
+    
+    <!-- CDN资源 -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="css/style.css?v=3.6" rel="stylesheet">
+    
+    <!-- Supabase JS 库 -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+    
+    <!-- Supabase 配置和初始化 -->
+    <script src="js/supabase-config.js"></script>
+    <script src="js/supabase-init.js"></script>
+    <script src="js/supabase-api.js"></script>
+</head>
+<body>
+    <!-- 导航栏 -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-gradient fixed-top">
+        <div class="container">
+            <a class="navbar-brand" href="#home" onclick="showPage('home'); return false;">
+                <i class="bi bi-stars"></i> 星座运势
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link active" href="#home" onclick="showPage('home'); return false;">首页</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#zodiac" onclick="showPage('zodiac'); return false;">星座</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#fortune" onclick="showPage('fortune'); return false;">运势</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#match" onclick="showPage('match'); return false;">配对</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#profile" onclick="checkLoginAndShowProfile(); return false;" id="profileNavLink">个人中心</a>
+                    </li>
+                    <li class="nav-item" id="adminNavItem" style="display: none;">
+                        <a class="nav-link" href="#admin" onclick="if(checkAdminAccess()){showPage('admin');}else{showMessage('需要管理员权限');} return false;">
+                            <i class="bi bi-graph-up"></i> 数据统计
+                        </a>
+                    </li>
+                    <li class="nav-item" id="notificationNavItem" style="display: none;">
+                        <a class="nav-link position-relative" href="#notifications" onclick="showPage('notifications'); return false;">
+                            <i class="bi bi-bell"></i> 消息
+                            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" id="notificationBadge" style="display: none;">
+                                0
+                            </span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#membership" onclick="if(checkLoginStatus()){showPage('membership');}else{showMessage('请先登录');showPage('login');} return false;">
+                            <i class="bi bi-star"></i> 会员中心
+                        </a>
+                    </li>
+                    <li class="nav-item" id="inviteNavItem" style="display: none;">
+                        <a class="nav-link" href="#invite" onclick="if(checkLoginStatus()){showPage('invite');}else{showMessage('请先登录');showPage('login');} return false;">
+                            <i class="bi bi-gift-fill"></i> 邀请好友
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#login" onclick="showPage('login'); return false;" id="loginNavLink" style="display: none;">
+                            <i class="bi bi-box-arrow-in-right"></i> 登录
+                        </a>
+                    </li>
+                    <li class="nav-item" id="userInfoNavItem" style="display: none;">
+                        <a class="nav-link" href="#profile" onclick="showPage('profile'); return false;">
+                            <i class="bi bi-person-circle"></i> <span id="userNicknameNav">用户</span>
+                        </a>
+                    </li>
+                    <li class="nav-item" id="logoutNavItem" style="display: none;">
+                        <a class="nav-link" href="#" onclick="logout(); return false;">
+                            <i class="bi bi-box-arrow-right"></i> 退出
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#community" onclick="showPage('community'); return false;">社区</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#career" onclick="showPage('career'); return false;">职场</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#mom" onclick="showPage('mom'); return false;">宝妈</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#mood" onclick="showPage('mood'); return false;">心境倾听</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#loveLine" onclick="if(typeof showLoveLine==='function'){showLoveLine();}else{showPage('loveLine');} return false;">爱情专线</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- 主内容区域 -->
+    <main class="main-content">
+        <!-- 首页部分 -->
+        <section id="home" class="page-section active">
+            <div class="hero-section">
+                <div class="container text-center">
+                    <h1 class="display-4 mb-4">探索星座的奥秘</h1>
+                    <p class="lead mb-4">发现你的星座运势，了解星座配对，开启星座之旅</p>
+                    <button class="btn btn-primary btn-lg" onclick="if(typeof window.showPage==='function'){window.showPage('zodiac');}else{alert('页面加载中，请稍候...');}">
+                        <i class="bi bi-stars"></i> 开始探索
+                    </button>
+                </div>
+            </div>
+            
+            <div class="container mt-5">
+                <div class="row">
+                    <div class="col-md-3 mb-4">
+                        <div class="feature-card" onclick="if(typeof window.showPage==='function'){window.showPage('fortune');}else{alert('页面加载中，请稍候...');}">
+                            <i class="bi bi-stars"></i>
+                            <h3>每日运势</h3>
+                            <p>查看今日星座运势，把握美好一天</p>
+                        </div>
+                    </div>
+                    <div class="col-md-3 mb-4">
+                        <div class="feature-card" onclick="if(typeof window.showPage==='function'){window.showPage('match');}else{alert('页面加载中，请稍候...');}">
+                            <i class="bi bi-heart-arrow"></i>
+                            <h3>星座配对</h3>
+                            <p>测试你和TA的星座配对指数</p>
+                        </div>
+                    </div>
+                    <div class="col-md-3 mb-4">
+                        <div class="feature-card" onclick="if(typeof window.showPage==='function'){window.showPage('community');}else{alert('页面加载中，请稍候...');}">
+                            <i class="bi bi-people-fill"></i>
+                            <h3>社区交流</h3>
+                            <p>与星座爱好者分享心得体会</p>
+                        </div>
+                    </div>
+                    <div class="col-md-3 mb-4">
+                        <div class="feature-card" onclick="if(typeof window.showPage==='function'){window.showPage('mood');}else{alert('页面加载中，请稍候...');}">
+                            <i class="bi bi-chat-heart"></i>
+                            <h3>心境倾听</h3>
+                            <p>分享你的心情，星座智慧为你解答</p>
+                        </div>
+                    </div>
+                    <div class="col-md-3 mb-4">
+                        <div class="feature-card" onclick="if(typeof window.showPage==='function'){window.showPage('career');}else{alert('页面加载中，请稍候...');}">
+                            <i class="bi bi-briefcase-fill"></i>
+                            <h3>职场</h3>
+                            <p>星座指导你的职场发展和人际关系</p>
+                        </div>
+                    </div>
+                    <div class="col-md-3 mb-4">
+                        <div class="feature-card" onclick="if(typeof window.showPage==='function'){window.showPage('mom');}else{alert('页面加载中，请稍候...');}">
+                            <i class="bi bi-heart-fill"></i>
+                            <h3>宝妈</h3>
+                            <p>星座育儿智慧，做更好的妈妈</p>
+                        </div>
+                    </div>
+                    <div class="col-md-3 mb-4">
+                        <div class="feature-card" onclick="if(typeof window.showLoveLine==='function'){window.showLoveLine();}else if(typeof window.showPage==='function'){window.showPage('loveLine');}else{alert('页面加载中，请稍候...');}">
+                            <i class="bi bi-heart-arrow"></i>
+                            <h3>爱情专线</h3>
+                            <p>星座爱情指导，让爱情更甜蜜</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 服务介绍区域 -->
+            <div class="container mt-5 mb-5">
+                <div class="row">
+                    <div class="col-12 text-center mb-5">
+                        <h2 class="display-5 fw-bold">我们的服务</h2>
+                        <p class="lead text-muted">专业星座服务，为您提供全方位的星座指导</p>
+                    </div>
+                </div>
+                <div class="row g-4">
+                    <div class="col-lg-4 col-md-6">
+                        <div class="service-card h-100">
+                            <div class="service-icon">
+                                <i class="bi bi-calendar-check"></i>
+                            </div>
+                            <h4 class="service-title">每日运势预测</h4>
+                            <p class="service-description">
+                                每日为您提供精准的星座运势分析，包括综合运势、爱情运势、事业运势、财运和健康运势，帮助您把握每一天的机遇与挑战。
+                            </p>
+                            <ul class="service-features">
+                                <li><i class="bi bi-check-circle"></i> 12星座全覆盖</li>
+                                <li><i class="bi bi-check-circle"></i> 每日实时更新</li>
+                                <li><i class="bi bi-check-circle"></i> 详细运势解读</li>
+                            </ul>
+                            <button class="btn btn-outline-primary mt-3" onclick="if(typeof window.showPage==='function'){window.showPage('fortune');}else{alert('页面加载中，请稍候...');}">
+                                立即查看 <i class="bi bi-arrow-right"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="col-lg-4 col-md-6">
+                        <div class="service-card h-100">
+                            <div class="service-icon">
+                                <i class="bi bi-heart-pulse"></i>
+                            </div>
+                            <h4 class="service-title">星座配对分析</h4>
+                            <p class="service-description">
+                                深入分析两个星座之间的配对指数，从性格、爱情、友情、事业等多个维度评估，为您的人际关系提供专业指导。
+                            </p>
+                            <ul class="service-features">
+                                <li><i class="bi bi-check-circle"></i> 多维度配对分析</li>
+                                <li><i class="bi bi-check-circle"></i> 详细匹配报告</li>
+                                <li><i class="bi bi-check-circle"></i> 个性化建议</li>
+                            </ul>
+                            <button class="btn btn-outline-primary mt-3" onclick="if(typeof window.showPage==='function'){window.showPage('match');}else{alert('页面加载中，请稍候...');}">
+                                开始配对 <i class="bi bi-arrow-right"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="col-lg-4 col-md-6">
+                        <div class="service-card h-100">
+                            <div class="service-icon">
+                                <i class="bi bi-chat-dots"></i>
+                            </div>
+                            <h4 class="service-title">专业星座咨询</h4>
+                            <p class="service-description">
+                                提供职场发展、宝妈育儿、心境倾听等专业咨询服务，结合星座智慧为您的生活、工作、情感提供个性化指导。
+                            </p>
+                            <ul class="service-features">
+                                <li><i class="bi bi-check-circle"></i> 职场发展指导</li>
+                                <li><i class="bi bi-check-circle"></i> 育儿智慧分享</li>
+                                <li><i class="bi bi-check-circle"></i> 情感问题解答</li>
+                            </ul>
+                            <button class="btn btn-outline-primary mt-3" onclick="if(typeof window.showPage==='function'){window.showPage('mood');}else{alert('页面加载中，请稍候...');}">
+                                咨询专家 <i class="bi bi-arrow-right"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 星座选择部分 -->
+        <section id="zodiac" class="page-section">
+            <div class="container">
+                <h2 class="text-center mb-5">选择你的星座</h2>
+                <div class="row" id="zodiacGrid">
+                    <!-- 星座卡片将通过JavaScript动态生成 -->
+                </div>
+            </div>
+        </section>
+
+        <!-- 运势展示部分 -->
+        <section id="fortune" class="page-section">
+            <div class="container">
+                <h2 class="text-center mb-5">星座运势</h2>
+                <div class="row">
+                    <div class="col-lg-10 mx-auto">
+                        <!-- 运势类型切换标签 -->
+                        <div class="fortune-tabs mb-4">
+                            <ul class="nav nav-pills nav-justified" id="fortuneTabs" role="tablist">
+                                <li class="nav-item" role="presentation">
+                                    <button class="nav-link active" id="today-tab" data-bs-toggle="pill" data-bs-target="#today-fortune" type="button" role="tab">
+                                        <i class="bi bi-calendar-day"></i> 今日运势
+                                    </button>
+                                </li>
+                                <li class="nav-item" role="presentation">
+                                    <button class="nav-link" id="week-tab" data-bs-toggle="pill" data-bs-target="#week-fortune" type="button" role="tab" onclick="checkMembershipAndShow('view_weekly_fortune', 'week-tab')">
+                                        <i class="bi bi-calendar-week"></i> 本周运势
+                                        <span class="badge bg-warning ms-1" id="weekBadge">会员</span>
+                                    </button>
+                                </li>
+                                <li class="nav-item" role="presentation">
+                                    <button class="nav-link" id="month-tab" data-bs-toggle="pill" data-bs-target="#month-fortune" type="button" role="tab" onclick="checkMembershipAndShow('view_monthly_fortune', 'month-tab')">
+                                        <i class="bi bi-calendar-month"></i> 本月运势
+                                        <span class="badge bg-warning ms-1" id="monthBadge">会员</span>
+                                    </button>
+                                </li>
+                            </ul>
+                        </div>
+                        
+                        <!-- 星座选择器 -->
+                        <div class="mb-4">
+                            <div class="card">
+                                <div class="card-body text-center">
+                                    <label class="form-label h5 mb-3">
+                                        <i class="bi bi-stars"></i> 选择你的星座查看运势
+                                    </label>
+                                    <select class="form-select form-select-lg" id="fortuneZodiacSelect" onchange="selectFortuneZodiac(this.value)">
+                                        <option value="">请选择星座</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- 今日运势 -->
+                        <div class="tab-content" id="fortuneTabContent">
+                            <div class="tab-pane fade show active" id="today-fortune" role="tabpanel">
+                                <div class="fortune-card">
+                                    <div class="fortune-header">
+                                        <h3 id="selectedZodiacName">选择星座查看运势</h3>
+                                        <span id="fortuneDate"></span>
+                                    </div>
+                                    <div class="fortune-body">
+                                <div class="fortune-item">
+                                    <div class="fortune-label">
+                                        <i class="bi bi-star"></i> 综合运势
+                                    </div>
+                                    <div class="fortune-content">
+                                        <div class="fortune-score" id="overallScore">
+                                            <div class="score-bar"></div>
+                                            <span class="score-text">--</span>
+                                        </div>
+                                        <p id="overallDesc">请先选择星座</p>
+                                    </div>
+                                </div>
+                                
+                                <div class="fortune-item">
+                                    <div class="fortune-label">
+                                        <i class="bi bi-heart"></i> 爱情运势
+                                    </div>
+                                    <div class="fortune-content">
+                                        <div class="fortune-score" id="loveScore">
+                                            <div class="score-bar"></div>
+                                            <span class="score-text">--</span>
+                                        </div>
+                                        <p id="loveDesc">请先选择星座</p>
+                                    </div>
+                                </div>
+                                
+                                <div class="fortune-item">
+                                    <div class="fortune-label">
+                                        <i class="bi bi-briefcase"></i> 事业运势
+                                    </div>
+                                    <div class="fortune-content">
+                                        <div class="fortune-score" id="careerScore">
+                                            <div class="score-bar"></div>
+                                            <span class="score-text">--</span>
+                                        </div>
+                                        <p id="careerDesc">请先选择星座</p>
+                                    </div>
+                                </div>
+                                
+                                <div class="fortune-item">
+                                    <div class="fortune-label">
+                                        <i class="bi bi-heart-pulse"></i> 健康运势
+                                    </div>
+                                    <div class="fortune-content">
+                                        <div class="fortune-score" id="healthScore">
+                                            <div class="score-bar"></div>
+                                            <span class="score-text">--</span>
+                                        </div>
+                                        <p id="healthDesc">请先选择星座</p>
+                                    </div>
+                                </div>
+                                
+                                <!-- 幸运元素展示 -->
+                                <div class="fortune-lucky-elements mt-4" id="luckyElements" style="display: none;">
+                                    <h5 class="mb-3"><i class="bi bi-sparkles"></i> 今日幸运元素</h5>
+                                    <div class="row g-3">
+                                        <div class="col-md-3 col-6">
+                                            <div class="lucky-item">
+                                                <div class="lucky-icon">🔢</div>
+                                                <div class="lucky-label">幸运数字</div>
+                                                <div class="lucky-value" id="luckyNumber">--</div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3 col-6">
+                                            <div class="lucky-item">
+                                                <div class="lucky-icon">🎨</div>
+                                                <div class="lucky-label">幸运颜色</div>
+                                                <div class="lucky-value" id="luckyColor">--</div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3 col-6">
+                                            <div class="lucky-item">
+                                                <div class="lucky-icon">🧭</div>
+                                                <div class="lucky-label">幸运方向</div>
+                                                <div class="lucky-value" id="luckyDirection">--</div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3 col-6">
+                                            <div class="lucky-item">
+                                                <div class="lucky-icon">💎</div>
+                                                <div class="lucky-label">幸运宝石</div>
+                                                <div class="lucky-value" id="luckyGem">--</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- 操作按钮 -->
+                                <div class="fortune-actions mt-4 text-center" id="fortuneActions" style="display: none;">
+                                    <button class="btn btn-outline-primary me-2" onclick="saveFortuneToHistory()" id="saveHistoryBtn">
+                                        <i class="bi bi-clock-history"></i> 保存到历史
+                                    </button>
+                                    <button class="btn btn-outline-warning" onclick="toggleFortuneFavorite()" id="favoriteBtn">
+                                        <i class="bi bi-star" id="favoriteIcon"></i> <span id="favoriteText">收藏</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- 本周运势 -->
+                        <div class="tab-pane fade" id="week-fortune" role="tabpanel">
+                            <div class="fortune-card">
+                                <div class="fortune-header">
+                                    <h3 id="weekZodiacName">选择星座查看本周运势</h3>
+                                    <span id="weekDateRange"></span>
+                                </div>
+                                <div class="fortune-body" id="weekFortuneBody">
+                                    <div class="alert alert-info">
+                                        <i class="bi bi-info-circle"></i> 本周运势需要会员权限，<a href="#" onclick="showPage('membership'); return false;">立即开通会员</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- 本月运势 -->
+                        <div class="tab-pane fade" id="month-fortune" role="tabpanel">
+                            <div class="fortune-card">
+                                <div class="fortune-header">
+                                    <h3 id="monthZodiacName">选择星座查看本月运势</h3>
+                                    <span id="monthDateRange"></span>
+                                </div>
+                                <div class="fortune-body" id="monthFortuneBody">
+                                    <div class="alert alert-info">
+                                        <i class="bi bi-info-circle"></i> 本月运势需要会员权限，<a href="#" onclick="showPage('membership'); return false;">立即开通会员</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 运势历史记录和收藏 -->
+                <div class="row mt-5">
+                    <div class="col-lg-10 mx-auto">
+                        <div class="card shadow-sm">
+                            <div class="card-header">
+                                <ul class="nav nav-tabs card-header-tabs" role="tablist">
+                                    <li class="nav-item" role="presentation">
+                                        <button class="nav-link active" id="history-tab" data-bs-toggle="tab" data-bs-target="#history-pane" type="button" role="tab">
+                                            <i class="bi bi-clock-history"></i> 历史记录
+                                        </button>
+                                    </li>
+                                    <li class="nav-item" role="presentation">
+                                        <button class="nav-link" id="favorites-tab" data-bs-toggle="tab" data-bs-target="#favorites-pane" type="button" role="tab">
+                                            <i class="bi bi-star-fill"></i> 我的收藏
+                                        </button>
+                                    </li>
+                                </ul>
+                            </div>
+                            <div class="card-body">
+                                <div class="tab-content">
+                                    <!-- 历史记录 -->
+                                    <div class="tab-pane fade show active" id="history-pane" role="tabpanel">
+                                        <div id="fortuneHistoryList">
+                                            <div class="text-center text-muted py-4">
+                                                <i class="bi bi-inbox" style="font-size: 2rem;"></i>
+                                                <p class="mt-2">暂无历史记录</p>
+                                                <small>查看运势后会自动保存到历史记录</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- 收藏列表 -->
+                                    <div class="tab-pane fade" id="favorites-pane" role="tabpanel">
+                                        <div id="fortuneFavoritesList">
+                                            <div class="text-center text-muted py-4">
+                                                <i class="bi bi-star" style="font-size: 2rem;"></i>
+                                                <p class="mt-2">暂无收藏</p>
+                                                <small>点击运势页面的收藏按钮即可收藏</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 星座配对部分 -->
+        <section id="match" class="page-section">
+            <div class="container">
+                <h2 class="text-center mb-5">星座配对</h2>
+                <div class="row">
+                    <div class="col-lg-8 mx-auto">
+                        <div class="match-card">
+                            <div class="match-selection">
+                                <div class="row">
+                                    <div class="col-md-5">
+                                        <label class="form-label">你的星座</label>
+                                        <select class="form-select" id="zodiac1">
+                                            <option value="">选择星座</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-2 text-center">
+                                        <i class="bi bi-heart-fill match-icon"></i>
+                                    </div>
+                                    <div class="col-md-5">
+                                        <label class="form-label">对方星座</label>
+                                        <select class="form-select" id="zodiac2">
+                                            <option value="">选择星座</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="text-center mt-4">
+                                    <button class="btn btn-primary" onclick="calculateMatch()">
+                                        <i class="bi bi-calculator"></i> 计算配对
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <div id="matchResult" class="match-result" style="display: none;">
+                                <h3>配对结果</h3>
+                                <div class="match-score">
+                                    <div class="score-circle">
+                                        <span id="matchPercentage">0%</span>
+                                    </div>
+                                    <p id="matchTitle"></p>
+                                </div>
+                                <div class="match-details">
+                                    <h4>配对分析</h4>
+                                    <p id="matchAnalysis"></p>
+                                    
+                                    <h4>相处建议</h4>
+                                    <p id="matchAdvice"></p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 登录注册部分 -->
+        <section id="login" class="page-section">
+            <div class="container">
+                <div class="row">
+                    <div class="col-lg-5 col-md-7 mx-auto">
+                        <div class="login-card">
+                            <div class="login-header text-center mb-4">
+                                <h2><i class="bi bi-person-circle"></i> 登录/注册</h2>
+                                <p class="text-muted">使用手机号登录，安全便捷</p>
+                            </div>
+                            
+                            <!-- 登录表单 -->
+                            <div id="loginFormContainer">
+                                <form id="loginForm">
+                                    <div class="mb-3">
+                                        <label class="form-label">手机号</label>
+                                        <input type="tel" class="form-control" id="loginPhone" placeholder="请输入手机号" maxlength="11">
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">密码</label>
+                                        <input type="password" class="form-control" id="loginPassword" placeholder="请输入密码">
+                                    </div>
+                                    <div class="mb-3 form-check">
+                                        <input type="checkbox" class="form-check-input" id="rememberMe">
+                                        <label class="form-check-label" for="rememberMe">记住我</label>
+                                    </div>
+                                    <button type="submit" class="btn btn-primary w-100 mb-3">
+                                        <i class="bi bi-box-arrow-in-right"></i> 登录
+                                    </button>
+                                    <div class="text-center">
+                                        <a href="#" onclick="showRegisterForm(); return false;" class="text-decoration-none">
+                                            还没有账号？立即注册
+                                        </a>
+                                    </div>
+                                    <div class="text-center mt-3">
+                                        <p class="text-muted small mb-0">
+                                            <i class="bi bi-shield-check"></i> 安全登录，保护您的隐私
+                                        </p>
+                                    </div>
+                                </form>
+                            </div>
+                            
+                            <!-- 注册表单 -->
+                            <div id="registerFormContainer" style="display: none;">
+                                <form id="registerForm">
+                                    <div class="mb-3">
+                                        <label class="form-label">昵称</label>
+                                        <input type="text" class="form-control" id="registerNickname" placeholder="请输入昵称">
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">手机号</label>
+                                        <input type="tel" class="form-control" id="registerPhone" placeholder="请输入手机号" maxlength="11">
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">密码</label>
+                                        <input type="password" class="form-control" id="registerPassword" placeholder="请输入密码（至少6位）">
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">确认密码</label>
+                                        <input type="password" class="form-control" id="registerConfirmPassword" placeholder="请再次输入密码">
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">验证码</label>
+                                        <div class="input-group">
+                                            <input type="text" class="form-control" id="registerCode" placeholder="请输入验证码">
+                                            <button type="button" class="btn btn-outline-secondary" onclick="sendVerificationCode()">
+                                                获取验证码
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <button type="submit" class="btn btn-primary w-100 mb-3">
+                                        <i class="bi bi-person-plus"></i> 注册
+                                    </button>
+                                    <div class="text-center">
+                                        <a href="#" onclick="showLoginForm(); return false;" class="text-decoration-none">
+                                            已有账号？立即登录
+                                        </a>
+                                    </div>
+                                    <div class="text-center mt-3">
+                                        <p class="text-muted small mb-0">
+                                            <i class="bi bi-shield-check"></i> 注册即表示同意用户协议和隐私政策
+                                        </p>
+                                    </div>
+                                </form>
+                            </div>
+                            
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 会员套餐页面 -->
+        <section id="membership" class="page-section">
+            <div class="container">
+                <h2 class="text-center mb-5">会员套餐</h2>
+                <div class="row g-4">
+                    <!-- 免费版 -->
+                    <div class="col-lg-3 col-md-6">
+                        <div class="membership-card">
+                            <div class="membership-header free">
+                                <h3>🆓 免费版</h3>
+                                <div class="price">¥0<span class="period">/永久</span></div>
+                            </div>
+                            <div class="membership-body">
+                                <ul class="membership-features">
+                                    <li><i class="bi bi-check-circle"></i> 每日运势查询（基础版）</li>
+                                    <li><i class="bi bi-check-circle"></i> 星座配对（基础版）</li>
+                                    <li><i class="bi bi-check-circle"></i> 社区浏览和评论</li>
+                                    <li><i class="bi bi-check-circle"></i> 个人资料管理</li>
+                                </ul>
+                                <button class="btn btn-outline-primary w-100" disabled>当前版本</button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 基础会员 -->
+                    <div class="col-lg-3 col-md-6">
+                        <div class="membership-card">
+                            <div class="membership-header basic">
+                                <h3>💎 基础会员</h3>
+                                <div class="price">¥19.9<span class="period">/月</span></div>
+                            </div>
+                            <div class="membership-body">
+                                <ul class="membership-features">
+                                    <li><i class="bi bi-check-circle"></i> 每日运势查询（详细版）</li>
+                                    <li><i class="bi bi-check-circle"></i> 星座配对（详细版）</li>
+                                    <li><i class="bi bi-check-circle"></i> 社区发帖和互动</li>
+                                    <li><i class="bi bi-check-circle"></i> 无广告体验</li>
+                                    <li><i class="bi bi-check-circle"></i> 历史运势查看</li>
+                                    <li><i class="bi bi-check-circle"></i> 个性化推荐</li>
+                                </ul>
+                                <button class="btn btn-primary w-100" onclick="selectMembership('basic')">立即开通</button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- VIP会员 -->
+                    <div class="col-lg-3 col-md-6">
+                        <div class="membership-card featured">
+                            <div class="membership-badge">推荐</div>
+                            <div class="membership-header vip">
+                                <h3>👑 VIP会员</h3>
+                                <div class="price">¥49.9<span class="period">/月</span></div>
+                            </div>
+                            <div class="membership-body">
+                                <ul class="membership-features">
+                                    <li><i class="bi bi-check-circle"></i> 所有基础会员功能</li>
+                                    <li><i class="bi bi-check-circle"></i> 每周运势预测</li>
+                                    <li><i class="bi bi-check-circle"></i> 深度星座分析</li>
+                                    <li><i class="bi bi-check-circle"></i> 专属客服支持</li>
+                                    <li><i class="bi bi-check-circle"></i> 优先功能体验</li>
+                                    <li><i class="bi bi-check-circle"></i> 会员专属标识</li>
+                                    <li><i class="bi bi-check-circle"></i> 离线缓存功能</li>
+                                </ul>
+                                <button class="btn btn-primary w-100" onclick="selectMembership('vip')">立即开通</button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 年度VIP -->
+                    <div class="col-lg-3 col-md-6">
+                        <div class="membership-card">
+                            <div class="membership-header annual">
+                                <h3>📅 年度VIP</h3>
+                                <div class="price">¥399<span class="period">/年</span></div>
+                                <div class="price-note">相当于¥33.25/月</div>
+                            </div>
+                            <div class="membership-body">
+                                <ul class="membership-features">
+                                    <li><i class="bi bi-check-circle"></i> 所有VIP会员功能</li>
+                                    <li><i class="bi bi-check-circle"></i> 2个月免费赠送</li>
+                                    <li><i class="bi bi-check-circle"></i> 生日专属服务</li>
+                                    <li><i class="bi bi-check-circle"></i> 线下活动优先参与</li>
+                                </ul>
+                                <button class="btn btn-primary w-100" onclick="selectMembership('annual')">立即开通</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 支付页面 -->
+        <section id="payment" class="page-section">
+            <div class="container">
+                <div class="row">
+                    <div class="col-lg-6 mx-auto">
+                        <div class="payment-card">
+                            <div class="payment-header text-center mb-4">
+                                <h2><i class="bi bi-credit-card"></i> 支付订单</h2>
+                                <div class="order-summary mt-3">
+                                    <div class="order-item">
+                                        <span class="order-label">套餐名称：</span>
+                                        <span class="order-value" id="paymentPlanName">-</span>
+                                    </div>
+                                    <div class="order-item">
+                                        <span class="order-label">订单金额：</span>
+                                        <span class="order-value order-amount" id="paymentAmount">¥0</span>
+                                    </div>
+                                    <div class="order-item">
+                                        <span class="order-label">订单号：</span>
+                                        <span class="order-value order-number" id="paymentOrderId">-</span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="payment-methods">
+                                <h5 class="mb-3">选择支付方式</h5>
+                                
+                                <!-- 微信支付 -->
+                                <div class="payment-method-item" onclick="selectPaymentMethod('wechat')">
+                                    <input type="radio" name="paymentMethod" id="wechatPay" value="wechat" checked>
+                                    <label for="wechatPay" class="payment-method-label">
+                                        <div class="payment-icon wechat">
+                                            <i class="bi bi-wechat"></i>
+                                        </div>
+                                        <div class="payment-info">
+                                            <div class="payment-name">微信支付</div>
+                                            <div class="payment-desc">使用微信扫码支付</div>
+                                        </div>
+                                    </label>
+                                </div>
+                                
+                                <!-- 支付宝 -->
+                                <div class="payment-method-item" onclick="selectPaymentMethod('alipay')">
+                                    <input type="radio" name="paymentMethod" id="alipayPay" value="alipay">
+                                    <label for="alipayPay" class="payment-method-label">
+                                        <div class="payment-icon alipay">
+                                            <i class="bi bi-wallet2"></i>
+                                        </div>
+                                        <div class="payment-info">
+                                            <div class="payment-name">支付宝</div>
+                                            <div class="payment-desc">使用支付宝扫码支付</div>
+                                        </div>
+                                    </label>
+                                </div>
+                            </div>
+                            
+                            <div class="payment-qrcode text-center mt-4" id="paymentQrcode" style="display: none;">
+                                <div class="qrcode-container">
+                                    <div id="qrcodeImage" class="qrcode-placeholder">
+                                        <i class="bi bi-qr-code" style="font-size: 100px; color: #ddd;"></i>
+                                        <p class="mt-2 text-muted">请使用手机扫码支付</p>
+                                    </div>
+                                </div>
+                                <p class="text-muted small mt-3">支付完成后，系统将自动更新您的会员状态</p>
+                            </div>
+                            
+                            <div class="payment-actions mt-4">
+                                <button class="btn btn-primary w-100 btn-lg" onclick="processPayment()">
+                                    <i class="bi bi-credit-card"></i> 确认支付
+                                </button>
+                                <button class="btn btn-outline-secondary w-100 mt-2" onclick="cancelPayment()">
+                                    取消订单
+                                </button>
+                            </div>
+                            
+                            <div class="payment-tips mt-4">
+                                <div class="alert alert-info">
+                                    <i class="bi bi-info-circle"></i> 
+                                    <strong>温馨提示：</strong>
+                                    <ul class="mb-0 mt-2">
+                                        <li>支付成功后，会员权益将立即生效</li>
+                                        <li>月度会员按自然月计算，年度会员按自然年计算</li>
+                                        <li>如有问题，请联系客服</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 个人中心部分 -->
+        <section id="profile" class="page-section">
+            <div class="container">
+                <h2 class="text-center mb-5">个人中心</h2>
+                <div class="row">
+                    <div class="col-lg-8 mx-auto">
+                        <!-- 会员状态卡片 -->
+                        <div class="membership-status-card mb-4" id="membershipStatusCard">
+                            <div class="membership-status-header">
+                                <div class="membership-icon">
+                                    <i class="bi bi-person-badge" id="membershipIcon"></i>
+                                </div>
+                                <div class="membership-info">
+                                    <h4 id="membershipType">免费用户</h4>
+                                    <p class="text-muted mb-0" id="membershipExpiry">永久有效</p>
+                                </div>
+                                <div class="membership-action">
+                                    <button class="btn btn-primary btn-sm" onclick="showPage('membership')">
+                                        <i class="bi bi-star"></i> 升级会员
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="membership-benefits" id="membershipBenefits">
+                                <!-- 会员权益将动态显示 -->
+                            </div>
+                        </div>
+                        
+                        <div class="profile-card">
+                            <div class="profile-header">
+                                <div class="avatar">
+                                    <i class="bi bi-person-circle"></i>
+                                </div>
+                                <h3>个人信息</h3>
+                            </div>
+                            <div class="profile-body">
+                                <form id="profileForm">
+                                    <div class="mb-3">
+                                        <label class="form-label">昵称</label>
+                                        <input type="text" class="form-control" id="nickname" placeholder="请输入昵称">
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">性别</label>
+                                        <select class="form-select" id="gender">
+                                            <option value="">请选择</option>
+                                            <option value="male">男</option>
+                                            <option value="female">女</option>
+                                        </select>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">生日</label>
+                                        <input type="date" class="form-control" id="birthday">
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">我的星座</label>
+                                        <select class="form-select" id="myZodiac">
+                                            <option value="">选择星座</option>
+                                        </select>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">个人简介</label>
+                                        <textarea class="form-control" id="bio" rows="3" placeholder="介绍一下自己..."></textarea>
+                                    </div>
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="bi bi-save"></i> 保存信息
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                        
+                        <!-- 个人中心功能菜单 -->
+                        <div class="profile-menu-card mt-4">
+                            <div class="row g-3">
+                                <div class="col-md-4">
+                                    <div class="menu-item-card" onclick="if(checkLoginStatus()){showPage('invite');}else{showMessage('请先登录');showPage('login');}">
+                                        <div class="menu-icon">
+                                            <i class="bi bi-gift-fill"></i>
+                                        </div>
+                                        <h6>邀请好友</h6>
+                                        <p class="text-muted small mb-0">邀请好友获得积分奖励</p>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="menu-item-card" onclick="if(checkLoginStatus()){showPage('points');}else{showMessage('请先登录');showPage('login');}">
+                                        <div class="menu-icon">
+                                            <i class="bi bi-star-fill"></i>
+                                        </div>
+                                        <h6>我的积分</h6>
+                                        <p class="text-muted small mb-0">查看积分余额和记录</p>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="menu-item-card" onclick="showPage('activities')">
+                                        <div class="menu-icon">
+                                            <i class="bi bi-calendar-event"></i>
+                                        </div>
+                                        <h6>精彩活动</h6>
+                                        <p class="text-muted small mb-0">参与活动赢取奖励</p>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="menu-item-card" onclick="showPage('settings')">
+                                        <div class="menu-icon">
+                                            <i class="bi bi-gear"></i>
+                                        </div>
+                                        <h6>设置</h6>
+                                        <p class="text-muted small mb-0">账户设置和隐私</p>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="menu-item-card" onclick="showPage('help')">
+                                        <div class="menu-icon">
+                                            <i class="bi bi-question-circle"></i>
+                                        </div>
+                                        <h6>帮助中心</h6>
+                                        <p class="text-muted small mb-0">常见问题和使用指南</p>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="menu-item-card" onclick="showPage('feedback')">
+                                        <div class="menu-icon">
+                                            <i class="bi bi-chat-left-text"></i>
+                                        </div>
+                                        <h6>意见反馈</h6>
+                                        <p class="text-muted small mb-0">告诉我们您的建议</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 设置页面 -->
+        <section id="settings" class="page-section">
+            <div class="container">
+                <div class="row">
+                    <div class="col-lg-8 mx-auto">
+                        <div class="settings-card">
+                            <h2 class="mb-4"><i class="bi bi-gear"></i> 设置</h2>
+                            
+                            <div class="settings-section">
+                                <h5>账户设置</h5>
+                                <div class="setting-item">
+                                    <label class="form-label">修改密码</label>
+                                    <div class="input-group">
+                                        <input type="password" class="form-control" id="oldPassword" placeholder="当前密码">
+                                        <input type="password" class="form-control" id="newPassword" placeholder="新密码">
+                                        <button class="btn btn-primary" onclick="changePassword()">修改</button>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="settings-section">
+                                <h5>隐私设置</h5>
+                                <div class="setting-item">
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" id="showProfile">
+                                        <label class="form-check-label" for="showProfile">公开个人资料</label>
+                                    </div>
+                                </div>
+                                <div class="setting-item">
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" id="showZodiac">
+                                        <label class="form-check-label" for="showZodiac">显示我的星座</label>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="settings-section">
+                                <h5>通知设置</h5>
+                                <div class="setting-item">
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" id="notifyComment" checked>
+                                        <label class="form-check-label" for="notifyComment">评论通知</label>
+                                    </div>
+                                </div>
+                                <div class="setting-item">
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" id="notifyMember" checked>
+                                        <label class="form-check-label" for="notifyMember">会员到期提醒</label>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="text-center mt-4">
+                                <button class="btn btn-primary" onclick="saveSettings()">
+                                    <i class="bi bi-save"></i> 保存设置
+                                </button>
+                                <button class="btn btn-outline-secondary ms-2" onclick="showPage('profile')">
+                                    返回
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 帮助中心页面 -->
+        <section id="help" class="page-section">
+            <div class="container">
+                <div class="row">
+                    <div class="col-lg-8 mx-auto">
+                        <div class="help-card">
+                            <h2 class="mb-4"><i class="bi bi-question-circle"></i> 帮助中心</h2>
+                            
+                            <div class="help-section">
+                                <h5>常见问题</h5>
+                                <div class="accordion" id="helpAccordion">
+                                    <div class="accordion-item">
+                                        <h2 class="accordion-header">
+                                            <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#help1">
+                                                如何查看运势？
+                                            </button>
+                                        </h2>
+                                        <div id="help1" class="accordion-collapse collapse show" data-bs-parent="#helpAccordion">
+                                            <div class="accordion-body">
+                                                在首页或运势页面选择您的星座，即可查看今日运势。会员用户还可以查看本周和本月运势。
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="accordion-item">
+                                        <h2 class="accordion-header">
+                                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#help2">
+                                                如何开通会员？
+                                            </button>
+                                        </h2>
+                                        <div id="help2" class="accordion-collapse collapse" data-bs-parent="#helpAccordion">
+                                            <div class="accordion-body">
+                                                点击导航栏"会员中心"，选择您需要的会员套餐，完成支付即可开通。支持微信支付和支付宝。
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="accordion-item">
+                                        <h2 class="accordion-header">
+                                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#help3">
+                                                会员有什么特权？
+                                            </button>
+                                        </h2>
+                                        <div id="help3" class="accordion-collapse collapse" data-bs-parent="#helpAccordion">
+                                            <div class="accordion-body">
+                                                基础会员可查看详细运势、发帖互动、无广告体验等。VIP会员还享有每周运势、深度分析、专属客服等特权。
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="accordion-item">
+                                        <h2 class="accordion-header">
+                                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#help4">
+                                                如何发布帖子？
+                                            </button>
+                                        </h2>
+                                        <div id="help4" class="accordion-collapse collapse" data-bs-parent="#helpAccordion">
+                                            <div class="accordion-body">
+                                                发布帖子需要基础会员及以上权限。在社区页面填写内容，选择分类，即可发布。会员还可以上传图片。
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="text-center mt-4">
+                                <button class="btn btn-outline-secondary" onclick="showPage('profile')">
+                                    返回
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 消息通知页面 -->
+        <section id="notifications" class="page-section">
+            <div class="container">
+                <div class="row">
+                    <div class="col-lg-10 mx-auto">
+                        <div class="notifications-header mb-4">
+                            <h2 class="mb-0"><i class="bi bi-bell"></i> 消息通知</h2>
+                            <div class="notification-actions">
+                                <button class="btn btn-sm btn-outline-primary" onclick="markAllAsRead()">
+                                    <i class="bi bi-check-all"></i> 全部已读
+                                </button>
+                                <button class="btn btn-sm btn-outline-danger" onclick="clearAllNotifications()">
+                                    <i class="bi bi-trash"></i> 清空
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <!-- 消息分类标签 -->
+                        <div class="notification-tabs mb-4">
+                            <ul class="nav nav-pills" id="notificationTabs" role="tablist">
+                                <li class="nav-item" role="presentation">
+                                    <button class="nav-link active" id="all-tab" data-bs-toggle="pill" data-bs-target="#all-notifications" type="button" role="tab" onclick="filterNotifications('all')">
+                                        全部 <span class="badge bg-secondary" id="allCount">0</span>
+                                    </button>
+                                </li>
+                                <li class="nav-item" role="presentation">
+                                    <button class="nav-link" id="system-tab" data-bs-toggle="pill" data-bs-target="#system-notifications" type="button" role="tab" onclick="filterNotifications('system')">
+                                        系统公告 <span class="badge bg-secondary" id="systemCount">0</span>
+                                    </button>
+                                </li>
+                                <li class="nav-item" role="presentation">
+                                    <button class="nav-link" id="activity-tab" data-bs-toggle="pill" data-bs-target="#activity-notifications" type="button" role="tab" onclick="filterNotifications('activity')">
+                                        活动推送 <span class="badge bg-secondary" id="activityCount">0</span>
+                                    </button>
+                                </li>
+                                <li class="nav-item" role="presentation">
+                                    <button class="nav-link" id="member-tab" data-bs-toggle="pill" data-bs-target="#member-notifications" type="button" role="tab" onclick="filterNotifications('member')">
+                                        会员提醒 <span class="badge bg-secondary" id="memberCount">0</span>
+                                    </button>
+                                </li>
+                                <li class="nav-item" role="presentation">
+                                    <button class="nav-link" id="interaction-tab" data-bs-toggle="pill" data-bs-target="#interaction-notifications" type="button" role="tab" onclick="filterNotifications('interaction')">
+                                        互动消息 <span class="badge bg-secondary" id="interactionCount">0</span>
+                                    </button>
+                                </li>
+                            </ul>
+                        </div>
+                        
+                        <!-- 消息列表 -->
+                        <div class="notifications-list" id="notificationsList">
+                            <!-- 消息将通过JavaScript动态生成 -->
+                        </div>
+                        
+                        <!-- 空状态 -->
+                        <div class="empty-notifications text-center py-5" id="emptyNotifications" style="display: none;">
+                            <i class="bi bi-bell-slash" style="font-size: 4rem; color: #ddd;"></i>
+                            <p class="text-muted mt-3">暂无消息</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 意见反馈页面 -->
+        <section id="feedback" class="page-section">
+            <div class="container">
+                <div class="row">
+                    <div class="col-lg-8 mx-auto">
+                        <div class="feedback-card">
+                            <h2 class="mb-4"><i class="bi bi-chat-left-text"></i> 意见反馈</h2>
+                            
+                            <form id="feedbackForm">
+                                <div class="mb-3">
+                                    <label class="form-label">反馈类型</label>
+                                    <select class="form-select" id="feedbackType">
+                                        <option value="bug">问题反馈</option>
+                                        <option value="suggestion">功能建议</option>
+                                        <option value="complaint">投诉建议</option>
+                                        <option value="other">其他</option>
+                                    </select>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label class="form-label">反馈内容</label>
+                                    <textarea class="form-control" id="feedbackContent" rows="6" placeholder="请详细描述您的问题或建议..."></textarea>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label class="form-label">联系方式（可选）</label>
+                                    <input type="text" class="form-control" id="feedbackContact" placeholder="手机号或邮箱，方便我们联系您">
+                                </div>
+                                
+                                <div class="text-center">
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="bi bi-send"></i> 提交反馈
+                                    </button>
+                                    <button type="button" class="btn btn-outline-secondary ms-2" onclick="showPage('profile')">
+                                        取消
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 社区部分 -->
+        <section id="community" class="page-section">
+            <div class="container">
+                <h2 class="text-center mb-5">社区交流</h2>
+                <div class="row">
+                    <div class="col-lg-10 mx-auto">
+                        <!-- 热门话题推荐 -->
+                        <div class="hot-topics mb-4" id="hotTopicsSection">
+                            <div class="hot-topics-header">
+                                <h5><i class="bi bi-fire"></i> 热门话题</h5>
+                            </div>
+                            <div class="hot-topics-list" id="hotTopicsList">
+                                <!-- 热门话题将通过JavaScript动态生成 -->
+                            </div>
+                        </div>
+                        
+                        <!-- 社区功能栏 -->
+                        <div class="community-toolbar mb-4">
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <div class="input-group">
+                                        <span class="input-group-text"><i class="bi bi-search"></i></span>
+                                        <input type="text" class="form-control" id="communitySearch" placeholder="搜索帖子、用户..." onkeyup="searchCommunity(this.value)">
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <select class="form-select" id="communityCategory" onchange="filterCommunityByCategory(this.value)">
+                                        <option value="">全部分类</option>
+                                        <option value="daily">每日运势</option>
+                                        <option value="match">星座配对</option>
+                                        <option value="love">爱情话题</option>
+                                        <option value="career">职场发展</option>
+                                        <option value="life">生活分享</option>
+                                        <option value="other">其他</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-3">
+                                    <select class="form-select" id="communitySort" onchange="sortCommunity(this.value)">
+                                        <option value="latest">最新发布</option>
+                                        <option value="hot">最热话题</option>
+                                        <option value="popular">最多点赞</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- 发布帖子区域（会员功能） -->
+                        <div class="community-post-card mb-4" id="communityPostCard">
+                            <div class="post-header">
+                                <h5><i class="bi bi-pencil-square"></i> 发表你的想法</h5>
+                                <span class="badge bg-warning" id="postMemberBadge" style="display: none;">会员功能</span>
+                            </div>
+                            <div class="post-body">
+                                <div class="mb-3">
+                                    <label class="form-label">选择分类</label>
+                                    <select class="form-select" id="postCategory">
+                                        <option value="daily">每日运势</option>
+                                        <option value="match">星座配对</option>
+                                        <option value="love">爱情话题</option>
+                                        <option value="career">职场发展</option>
+                                        <option value="life">生活分享</option>
+                                        <option value="other">其他</option>
+                                    </select>
+                                </div>
+                                <textarea class="form-control mb-3" id="postContent" rows="4" placeholder="分享你的星座心得、生活感悟..." oninput="updatePostCharCount(this.value)"></textarea>
+                                
+                                <!-- 图片上传（会员功能） -->
+                                <div class="mb-3" id="imageUploadSection" style="display: none;">
+                                    <label class="form-label">上传图片（最多3张）</label>
+                                    <div class="image-upload-area">
+                                        <input type="file" class="d-none" id="imageUpload" accept="image/*" multiple onchange="handleImageUpload(this.files)">
+                                        <button type="button" class="btn btn-outline-secondary" onclick="document.getElementById('imageUpload').click()">
+                                            <i class="bi bi-image"></i> 选择图片
+                                        </button>
+                                    </div>
+                                    <div class="image-preview mt-2" id="imagePreview"></div>
+                                </div>
+                                
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div class="text-muted small">
+                                        <span id="postCharCount">0</span>/500 字
+                                    </div>
+                                    <button class="btn btn-primary" id="addPost" onclick="addPost()">
+                                        <i class="bi bi-send"></i> 发布
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- 帖子列表 -->
+                        <div class="community-posts" id="commentsList">
+                            <!-- 帖子将通过JavaScript动态生成 -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    <!-- 职场功能部分 -->
+    <section id="career" class="page-section">
+        <div class="container">
+            <h2 class="text-center mb-5">星座职场指南</h2>
+            <div class="row">
+                <div class="col-lg-8 mx-auto">
+                    <div class="career-section">
+                        <div class="career-header">
+                            <h3><i class="bi bi-briefcase-fill"></i> 星座职场分析</h3>
+                            <p>了解你的星座在职场上的优势和发展方向</p>
+                        </div>
+                        
+                        <div class="career-selector">
+                            <select class="form-select" id="careerZodiac">
+                                <option value="">选择你的星座</option>
+                            </select>
+                            <button class="btn btn-primary career-analyze-btn mt-3" id="analyzeCareerBtn" onclick="analyzeCareer()">
+                                <i class="bi bi-search"></i> 分析职场运势
+                            </button>
+                        </div>
+                        
+                        <div id="careerResult" class="career-result" style="display: none;">
+                            <!-- 职场分析结果将通过JavaScript动态生成 -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 宝妈功能部分 -->
+    <section id="mom" class="page-section">
+        <div class="container">
+            <h2 class="text-center mb-5">星座育儿指南</h2>
+            <div class="row">
+                <div class="col-lg-8 mx-auto">
+                    <div class="mom-section">
+                        <div class="mom-header">
+                            <h3><i class="bi bi-heart-fill"></i> 星座育儿分析</h3>
+                            <p>了解你的星座在育儿方面的优势和特点</p>
+                        </div>
+                        
+                        <div class="mom-selector">
+                            <select class="form-select" id="momZodiac">
+                                <option value="">选择你的星座</option>
+                            </select>
+                            <button class="btn btn-primary mom-analyze-btn mt-3" id="analyzeMomBtn" onclick="analyzeMom()">
+                                <i class="bi bi-search"></i> 分析育儿风格
+                            </button>
+                        </div>
+                        
+                        <div id="momResult" class="mom-result" style="display: none;">
+                            <!-- 育儿分析结果将通过JavaScript动态生成 -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 爱情专线功能部分 -->
+    <section id="loveLine" class="page-section">
+        <div class="container">
+            <h2 class="text-center mb-5">💝 星座爱情专线</h2>
+            <div class="row">
+                <div class="col-lg-8 mx-auto">
+                    <div class="love-line-section">
+                        <div class="love-header">
+                            <h3><i class="bi bi-heart-arrow"></i> 专业爱情指导</h3>
+                            <p>星座智慧为你解答爱情困惑，让爱情之路更加甜蜜</p>
+                        </div>
+                        
+                        <!-- 功能选项卡 -->
+                        <ul class="nav nav-tabs love-tabs mb-4" id="loveTabs" role="tablist">
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link active" id="love-fortune-tab" data-bs-toggle="tab" data-bs-target="#love-fortune" type="button" role="tab">
+                                    <i class="bi bi-stars"></i> 恋爱运势
+                                </button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="love-match-tab" data-bs-toggle="tab" data-bs-target="#love-match" type="button" role="tab">
+                                    <i class="bi bi-heart"></i> 爱情配对
+                                </button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="love-advice-tab" data-bs-toggle="tab" data-bs-target="#love-advice" type="button" role="tab">
+                                    <i class="bi bi-chat-heart"></i> 情感咨询
+                                </button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="love-blossom-tab" data-bs-toggle="tab" data-bs-target="#love-blossom" type="button" role="tab">
+                                    <i class="bi bi-flower1"></i> 桃花运势
+                                </button>
+                            </li>
+                        </ul>
+                        
+                        <div class="tab-content" id="loveTabsContent">
+                            <!-- 恋爱运势 -->
+                            <div class="tab-pane fade show active" id="love-fortune" role="tabpanel">
+                                <div class="love-fortune-section">
+                                    <div class="mb-3">
+                                        <label class="form-label">你的星座</label>
+                                        <select class="form-select" id="loveFortuneZodiac">
+                                            <option value="">选择你的星座</option>
+                                        </select>
+                                    </div>
+                                    <button class="btn btn-primary w-100" onclick="analyzeLoveFortune()">
+                                        <i class="bi bi-stars"></i> 查看恋爱运势
+                                    </button>
+                                    
+                                    <div id="loveFortuneResult" class="love-result mt-4" style="display: none;">
+                                        <div class="result-header">
+                                            <h4><i class="bi bi-heart-fill"></i> 你的恋爱运势</h4>
+                                        </div>
+                                        <div class="result-content">
+                                            <div class="love-score-section">
+                                                <div class="score-item">
+                                                    <span class="score-label">综合恋爱指数</span>
+                                                    <div class="score-bar">
+                                                        <div class="score-fill" id="loveOverallScore"></div>
+                                                    </div>
+                                                    <span class="score-value" id="loveOverallValue">0</span>
+                                                </div>
+                                                <div class="score-item">
+                                                    <span class="score-label">单身脱单指数</span>
+                                                    <div class="score-bar">
+                                                        <div class="score-fill" id="loveSingleScore"></div>
+                                                    </div>
+                                                    <span class="score-value" id="loveSingleValue">0</span>
+                                                </div>
+                                                <div class="score-item">
+                                                    <span class="score-label">恋情稳定指数</span>
+                                                    <div class="score-bar">
+                                                        <div class="score-fill" id="loveStableScore"></div>
+                                                    </div>
+                                                    <span class="score-value" id="loveStableValue">0</span>
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="advice-section">
+                                                <h5>💕 本月爱情指南</h5>
+                                                <p id="loveMonthlyGuide"></p>
+                                            </div>
+                                            
+                                            <div class="advice-section">
+                                                <h5>🌟 最佳恋爱时机</h5>
+                                                <p id="loveBestTime"></p>
+                                            </div>
+                                            
+                                            <div class="advice-section">
+                                                <h5>💝 爱情小贴士</h5>
+                                                <p id="loveTips"></p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- 爱情配对 -->
+                            <div class="tab-pane fade" id="love-match" role="tabpanel">
+                                <div class="love-match-section">
+                                    <div class="row mb-3">
+                                        <div class="col-md-5">
+                                            <label class="form-label">你的星座</label>
+                                            <select class="form-select" id="loveMatchZodiac1">
+                                                <option value="">选择星座</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-md-2 text-center">
+                                            <i class="bi bi-heart-fill text-danger" style="font-size: 2rem; line-height: 2.5rem;"></i>
+                                        </div>
+                                        <div class="col-md-5">
+                                            <label class="form-label">对方星座</label>
+                                            <select class="form-select" id="loveMatchZodiac2">
+                                                <option value="">选择星座</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <button class="btn btn-primary w-100" onclick="analyzeLoveMatch()">
+                                        <i class="bi bi-heart"></i> 分析爱情配对
+                                    </button>
+                                    
+                                    <div id="loveMatchResult" class="love-result mt-4" style="display: none;">
+                                        <div class="result-header">
+                                            <h4><i class="bi bi-heart-fill"></i> 爱情配对分析</h4>
+                                        </div>
+                                        <div class="result-content">
+                                            <div class="match-score-circle">
+                                                <div class="score-circle">
+                                                    <span id="loveMatchPercentage">0%</span>
+                                                </div>
+                                                <p id="loveMatchTitle"></p>
+                                            </div>
+                                            
+                                            <div class="advice-section">
+                                                <h5>💕 爱情契合度</h5>
+                                                <p id="loveCompatibility"></p>
+                                            </div>
+                                            
+                                            <div class="advice-section">
+                                                <h5>🌟 相处优势</h5>
+                                                <p id="loveAdvantages"></p>
+                                            </div>
+                                            
+                                            <div class="advice-section">
+                                                <h5>⚠️ 需要注意</h5>
+                                                <p id="loveChallenges"></p>
+                                            </div>
+                                            
+                                            <div class="advice-section">
+                                                <h5>💝 爱情保鲜秘诀</h5>
+                                                <p id="loveMaintenance"></p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- 情感咨询 -->
+                            <div class="tab-pane fade" id="love-advice" role="tabpanel">
+                                <div class="love-advice-section">
+                                    <div class="mb-3">
+                                        <label class="form-label">你的星座</label>
+                                        <select class="form-select" id="loveAdviceZodiac">
+                                            <option value="">选择你的星座</option>
+                                        </select>
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <label class="form-label">情感状态</label>
+                                        <select class="form-select" id="loveStatus">
+                                            <option value="">选择情感状态</option>
+                                            <option value="single">单身</option>
+                                            <option value="dating">恋爱中</option>
+                                            <option value="married">已婚</option>
+                                            <option value="complicated">感情复杂</option>
+                                            <option value="heartbroken">失恋中</option>
+                                        </select>
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <label class="form-label">你的情感困惑</label>
+                                        <textarea class="form-control" id="loveProblem" rows="4" placeholder="告诉我你的情感困惑，星座智慧会为你解答...&#10;&#10;比如：&#10;• 为什么总是遇不到对的人？&#10;• 感情进入了平淡期怎么办？&#10;• 不知道该不该分手&#10;• 如何挽回失去的爱情？&#10;• 暗恋的人会喜欢我吗？"></textarea>
+                                    </div>
+                                    
+                                    <button class="btn btn-primary w-100" onclick="getLoveAdvice()">
+                                        <i class="bi bi-chat-heart"></i> 获取爱情指导
+                                    </button>
+                                    
+                                    <div id="loveAdviceResult" class="love-result mt-4" style="display: none;">
+                                        <div class="result-header">
+                                            <h4><i class="bi bi-heart-fill"></i> 星座爱情指导</h4>
+                                        </div>
+                                        <div class="result-content">
+                                            <div class="advice-section warm-response">
+                                                <h5>💝 温暖理解</h5>
+                                                <p id="loveWarmResponse"></p>
+                                            </div>
+                                            
+                                            <div class="advice-section">
+                                                <h5>🌈 星座分析</h5>
+                                                <p id="loveZodiacAnalysis"></p>
+                                            </div>
+                                            
+                                            <div class="advice-section">
+                                                <h5>✨ 专业建议</h5>
+                                                <p id="loveProfessionalAdvice"></p>
+                                            </div>
+                                            
+                                            <div class="advice-section">
+                                                <h5>🌟 行动指南</h5>
+                                                <p id="loveActionGuide"></p>
+                                            </div>
+                                            
+                                            <div class="comfort-section">
+                                                <h5>🤗 爱的祝福</h5>
+                                                <p id="loveBlessing"></p>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="result-footer mt-3">
+                                            <button class="btn btn-outline-primary" onclick="resetLoveAdvice()">
+                                                <i class="bi bi-chat-heart"></i> 继续咨询
+                                            </button>
+                                            <button class="btn btn-primary" onclick="saveLoveAdvice()">
+                                                <i class="bi bi-heart-fill"></i> 保存指导
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- 桃花运势 -->
+                            <div class="tab-pane fade" id="love-blossom" role="tabpanel">
+                                <div class="love-blossom-section">
+                                    <div class="mb-3">
+                                        <label class="form-label">你的星座</label>
+                                        <select class="form-select" id="blossomZodiac">
+                                            <option value="">选择你的星座</option>
+                                        </select>
+                                    </div>
+                                    
+                                    <button class="btn btn-primary w-100" onclick="analyzeBlossomFortune()">
+                                        <i class="bi bi-flower1"></i> 查看桃花运势
+                                    </button>
+                                    
+                                    <div id="blossomResult" class="love-result mt-4" style="display: none;">
+                                        <div class="result-header">
+                                            <h4><i class="bi bi-flower1"></i> 你的桃花运势</h4>
+                                        </div>
+                                        <div class="result-content">
+                                            <div class="blossom-score-section">
+                                                <div class="score-item">
+                                                    <span class="score-label">本月桃花指数</span>
+                                                    <div class="score-bar">
+                                                        <div class="score-fill blossom-fill" id="blossomScore"></div>
+                                                    </div>
+                                                    <span class="score-value" id="blossomValue">0</span>
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="advice-section">
+                                                <h5>🌸 桃花盛开时间</h5>
+                                                <p id="blossomTime"></p>
+                                            </div>
+                                            
+                                            <div class="advice-section">
+                                                <h5>💕 最佳邂逅地点</h5>
+                                                <p id="blossomPlace"></p>
+                                            </div>
+                                            
+                                            <div class="advice-section">
+                                                <h5>👥 桃花对象类型</h5>
+                                                <p id="blossomType"></p>
+                                            </div>
+                                            
+                                            <div class="advice-section">
+                                                <h5>✨ 提升桃花运方法</h5>
+                                                <p id="blossomMethod"></p>
+                                            </div>
+                                            
+                                            <div class="advice-section">
+                                                <h5>🌟 桃花颜色建议</h5>
+                                                <p id="blossomColor"></p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 心境倾听功能区域 -->
+    <section id="mood" class="page-section">
+        <div class="container">
+            <h2 class="text-center mb-5">心境倾听</h2>
+            <div class="row mt-5">
+                <div class="col-lg-8 mx-auto">
+                    <div class="mood-listener-card">
+                        <div class="mood-header">
+                            <h3><i class="bi bi-chat-heart"></i> 星座心境倾听</h3>
+                            <p>告诉我你的心情，让星座的智慧为你指引方向</p>
+                        </div>
+                        <div class="mood-body">
+                            <div class="mood-input-section">
+                                <div class="mb-3">
+                                    <label class="form-label">你的星座</label>
+                                    <select class="form-select" id="moodZodiacPage">
+                                        <option value="">选择你的星座</option>
+                                    </select>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label class="form-label">告诉我你的心声</label>
+                                    <textarea class="form-control" id="moodContentPage" rows="4" placeholder="把你的心声告诉我，我在这里倾听...&#10;&#10;比如：&#10;• 我不知道该怎么办了&#10;• 感觉很迷茫，找不到方向&#10;• 心里很难受，想找个人说说&#10;• 面临选择，不知道怎么决定&#10;• 就是想找个人聊聊天"></textarea>
+                                </div>
+                                <button class="btn btn-primary btn-lg w-100" onclick="analyzeMoodPage()">
+                                    <i class="bi bi-heart-pulse"></i> 我在这里倾听
+                                </button>
+                            </div>
+                            
+                            <div id="moodResultPage" class="mood-result" style="display: none;">
+                                <div class="result-header">
+                                    <h4><i class="bi bi-heart"></i> 我听到了你的心声</h4>
+                                </div>
+                                <div class="result-content">
+                                    <div class="advice-section warm-response">
+                                        <h5>💝 温暖回应</h5>
+                                        <p id="warmResponse"></p>
+                                    </div>
+                                    <div class="advice-section">
+                                        <h5>🌈 深度理解</h5>
+                                        <p id="deepUnderstanding"></p>
+                                    </div>
+                                    <div class="advice-section">
+                                        <h5>✨ 温柔建议</h5>
+                                        <p id="gentleAdvice"></p>
+                                    </div>
+                                    <div class="advice-section">
+                                        <h5>🌟 陪伴前行</h5>
+                                        <p id="accompanyForward"></p>
+                                    </div>
+                                    <div class="comfort-section">
+                                        <h5>🤗 星座的拥抱</h5>
+                                        <p id="zodiacHug"></p>
+                                    </div>
+                                </div>
+                                <div class="result-footer">
+                                    <button class="btn btn-outline-primary" onclick="resetMoodPage()">
+                                        <i class="bi bi-chat-heart"></i> 继续倾诉
+                                    </button>
+                                    <button class="btn btn-primary" onclick="saveMoodReadingPage()">
+                                        <i class="bi bi-heart-fill"></i> 保存这份温暖
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 邀请好友页面 -->
+    <section id="invite" class="page-section">
+        <div class="container">
+            <h2 class="text-center mb-5">邀请好友</h2>
+            <div class="row mt-5">
+                <div class="col-lg-8 mx-auto">
+                    <div class="card shadow-sm">
+                        <div class="card-body p-4">
+                            <div class="invite-header text-center mb-4">
+                                <i class="bi bi-gift-fill text-primary" style="font-size: 3rem;"></i>
+                                <h3 class="mt-3">邀请好友，共享好运</h3>
+                                <p class="text-muted">每邀请一位好友注册，您和好友都能获得积分奖励！</p>
+                                <div class="alert alert-info mt-3 text-start">
+                                    <h6 class="alert-heading"><i class="bi bi-info-circle"></i> 如何使用邀请功能？</h6>
+                                    <p class="mb-2"><strong>步骤1：</strong>复制下方的<strong class="text-primary">邀请码</strong>或<strong class="text-primary">邀请链接</strong></p>
+                                    <p class="mb-2"><strong>步骤2：</strong>通过微信、QQ、短信等方式发送给好友</p>
+                                    <p class="mb-2"><strong>步骤3：</strong>好友点击链接或注册时输入邀请码，即可自动关联</p>
+                                    <p class="mb-0"><strong>奖励：</strong>好友注册成功后，您获得<strong class="text-success">100积分</strong>，好友获得<strong class="text-success">50积分</strong></p>
+                                </div>
+                            </div>
+                            
+                            <div class="invite-code-section mb-4">
+                                <label class="form-label fw-bold">我的邀请码</label>
+                                <div class="input-group">
+                                    <input type="text" class="form-control form-control-lg text-center fw-bold" id="inviteCode" readonly>
+                                    <button class="btn btn-primary" onclick="copyInviteCode()">
+                                        <i class="bi bi-clipboard"></i> 复制
+                                    </button>
+                                </div>
+                                <small class="text-muted d-block mt-2">分享此邀请码给好友，好友注册时输入即可获得奖励</small>
+                            </div>
+                            
+                            <div class="invite-link-section mb-4">
+                                <label class="form-label fw-bold">我的邀请链接</label>
+                                <div class="input-group">
+                                    <input type="text" class="form-control" id="inviteLink" readonly>
+                                    <button class="btn btn-outline-primary" onclick="copyInviteLink()">
+                                        <i class="bi bi-clipboard"></i> 复制链接
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <div class="invite-stats mb-4">
+                                <div class="row text-center">
+                                    <div class="col-4">
+                                        <div class="stat-item">
+                                            <div class="stat-value text-primary" id="invitedCount">0</div>
+                                            <div class="stat-label">已邀请人数</div>
+                                        </div>
+                                    </div>
+                                    <div class="col-4">
+                                        <div class="stat-item">
+                                            <div class="stat-value text-success" id="pointsEarned">0</div>
+                                            <div class="stat-label">获得积分</div>
+                                        </div>
+                                    </div>
+                                    <div class="col-4">
+                                        <div class="stat-item">
+                                            <div class="stat-value text-warning" id="pointsReward">100</div>
+                                            <div class="stat-label">每邀请奖励</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="invite-actions">
+                                <h5 class="mb-3">分享方式</h5>
+                                <div class="d-grid gap-2">
+                                    <button class="btn btn-success" onclick="shareToWeChat()">
+                                        <i class="bi bi-wechat"></i> 分享到微信
+                                    </button>
+                                    <button class="btn btn-primary" onclick="shareToMoments()">
+                                        <i class="bi bi-share"></i> 分享到朋友圈
+                                    </button>
+                                    <button class="btn btn-outline-secondary" onclick="shareToLink()">
+                                        <i class="bi bi-link-45deg"></i> 复制分享链接
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <div class="invite-rules mt-4 p-3 bg-light rounded">
+                                <h6 class="fw-bold">邀请规则</h6>
+                                <ul class="mb-0 small">
+                                    <li>每成功邀请一位好友注册，您可获得 <strong>100积分</strong></li>
+                                    <li>被邀请的好友注册时输入您的邀请码，可获得 <strong>50积分</strong></li>
+                                    <li>好友完成首次登录后，奖励将自动发放</li>
+                                    <li>积分可用于兑换会员、参与活动等</li>
+                                </ul>
+                            </div>
+                            
+                            <div class="invite-list mt-4">
+                                <h5 class="mb-3">邀请记录</h5>
+                                <div id="inviteRecordsList" class="list-group">
+                                    <div class="text-center text-muted py-4">
+                                        <i class="bi bi-inbox" style="font-size: 2rem;"></i>
+                                        <p class="mt-2">暂无邀请记录</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 积分系统页面 -->
+    <section id="points" class="page-section">
+        <div class="container">
+            <h2 class="text-center mb-5">我的积分</h2>
+            <div class="row mt-5">
+                <div class="col-lg-8 mx-auto">
+                    <div class="card shadow-sm mb-4">
+                        <div class="card-body p-4 text-center">
+                            <div class="points-balance">
+                                <i class="bi bi-star-fill text-warning" style="font-size: 3rem;"></i>
+                                <h2 class="mt-3 mb-0" id="pointsBalance">0</h2>
+                                <p class="text-muted">当前积分余额</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="card shadow-sm mb-4">
+                        <div class="card-header bg-primary text-white">
+                            <h5 class="mb-0"><i class="bi bi-gift"></i> 积分商城</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row" id="pointsShop">
+                                <!-- 积分商品列表 -->
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="card shadow-sm">
+                        <div class="card-header">
+                            <h5 class="mb-0"><i class="bi bi-clock-history"></i> 积分记录</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="mb-3">
+                                <select class="form-select" id="pointsFilter" onchange="filterPointsRecords()">
+                                    <option value="all">全部记录</option>
+                                    <option value="earn">获得积分</option>
+                                    <option value="spend">消费积分</option>
+                                </select>
+                            </div>
+                            <div id="pointsRecordsList" class="list-group">
+                                <!-- 积分记录列表 -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 活动页面 -->
+    <section id="activities" class="page-section">
+        <div class="container">
+            <h2 class="text-center mb-5">精彩活动</h2>
+            <div class="row mt-5" id="activitiesList">
+                <!-- 活动列表 -->
+            </div>
+        </div>
+    </section>
+
+    <!-- 活动详情页面 -->
+    <section id="activityDetail" class="page-section">
+        <div class="container">
+            <div class="row mt-5">
+                <div class="col-lg-10 mx-auto">
+                    <button class="btn btn-outline-secondary mb-3" onclick="showPage('activities')">
+                        <i class="bi bi-arrow-left"></i> 返回活动列表
+                    </button>
+                    <div class="card shadow-sm">
+                        <div class="card-body p-4">
+                            <div id="activityDetailContent">
+                                <!-- 活动详情内容 -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 数据统计后台 -->
+    <section id="admin" class="page-section">
+        <div class="container">
+            <div class="row">
+                <div class="col-12">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h2 class="mb-0"><i class="bi bi-graph-up"></i> 数据统计后台</h2>
+                        <button class="btn btn-outline-secondary" onclick="refreshAdminData()">
+                            <i class="bi bi-arrow-clockwise"></i> 刷新数据
+                        </button>
+                    </div>
+                    
+                    <!-- 数据概览卡片 -->
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-3 col-6">
+                            <div class="card bg-primary text-white">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <h6 class="mb-1">总用户数</h6>
+                                            <h3 class="mb-0" id="totalUsers">0</h3>
+                                        </div>
+                                        <i class="bi bi-people-fill" style="font-size: 2.5rem; opacity: 0.5;"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3 col-6">
+                            <div class="card bg-success text-white">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <h6 class="mb-1">会员用户</h6>
+                                            <h3 class="mb-0" id="memberUsers">0</h3>
+                                        </div>
+                                        <i class="bi bi-star-fill" style="font-size: 2.5rem; opacity: 0.5;"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3 col-6">
+                            <div class="card bg-warning text-white">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <h6 class="mb-1">付费订单</h6>
+                                            <h3 class="mb-0" id="totalOrders">0</h3>
+                                        </div>
+                                        <i class="bi bi-cart-check" style="font-size: 2.5rem; opacity: 0.5;"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3 col-6">
+                            <div class="card bg-info text-white">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <h6 class="mb-1">总收入</h6>
+                                            <h3 class="mb-0" id="totalRevenue">¥0</h3>
+                                        </div>
+                                        <i class="bi bi-currency-yen" style="font-size: 2.5rem; opacity: 0.5;"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 功能标签页 -->
+                    <div class="card shadow-sm">
+                        <div class="card-header">
+                            <ul class="nav nav-tabs card-header-tabs" role="tablist">
+                                <li class="nav-item" role="presentation">
+                                    <button class="nav-link active" id="overview-tab" data-bs-toggle="tab" data-bs-target="#overview-pane" type="button" role="tab">
+                                        <i class="bi bi-speedometer2"></i> 数据概览
+                                    </button>
+                                </li>
+                                <li class="nav-item" role="presentation">
+                                    <button class="nav-link" id="users-tab" data-bs-toggle="tab" data-bs-target="#users-pane" type="button" role="tab">
+                                        <i class="bi bi-people"></i> 用户管理
+                                    </button>
+                                </li>
+                                <li class="nav-item" role="presentation">
+                                    <button class="nav-link" id="membership-tab" data-bs-toggle="tab" data-bs-target="#membership-pane" type="button" role="tab">
+                                        <i class="bi bi-star"></i> 会员统计
+                                    </button>
+                                </li>
+                                <li class="nav-item" role="presentation">
+                                    <button class="nav-link" id="revenue-tab" data-bs-toggle="tab" data-bs-target="#revenue-pane" type="button" role="tab">
+                                        <i class="bi bi-cash-coin"></i> 收入统计
+                                    </button>
+                                </li>
+                                <li class="nav-item" role="presentation">
+                                    <button class="nav-link" id="content-tab" data-bs-toggle="tab" data-bs-target="#content-pane" type="button" role="tab">
+                                        <i class="bi bi-file-text"></i> 内容管理
+                                    </button>
+                                </li>
+                                <li class="nav-item" role="presentation">
+                                    <button class="nav-link" id="analytics-tab" data-bs-toggle="tab" data-bs-target="#analytics-pane" type="button" role="tab">
+                                        <i class="bi bi-graph-up-arrow"></i> 行为分析
+                                    </button>
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="card-body">
+                            <div class="tab-content">
+                                <!-- 数据概览 -->
+                                <div class="tab-pane fade show active" id="overview-pane" role="tabpanel">
+                                    <div class="row">
+                                        <div class="col-md-6 mb-4">
+                                            <h5 class="mb-3">用户分布</h5>
+                                            <div id="userDistributionChart">
+                                                <!-- 用户分布图表 -->
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6 mb-4">
+                                            <h5 class="mb-3">会员等级分布</h5>
+                                            <div id="membershipDistributionChart">
+                                                <!-- 会员分布图表 -->
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6 mb-4">
+                                            <h5 class="mb-3">今日数据</h5>
+                                            <div id="todayStats">
+                                                <!-- 今日统计数据 -->
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6 mb-4">
+                                            <h5 class="mb-3">功能使用排行</h5>
+                                            <div id="featureUsageRanking">
+                                                <!-- 功能使用排行 -->
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- 用户管理 -->
+                                <div class="tab-pane fade" id="users-pane" role="tabpanel">
+                                    <div class="mb-3">
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <input type="text" class="form-control" id="userSearchInput" placeholder="搜索用户（手机号/昵称）" onkeyup="searchUsers(this.value)">
+                                            </div>
+                                            <div class="col-md-3">
+                                                <select class="form-select" id="userFilterSelect" onchange="filterUsers()">
+                                                    <option value="all">全部用户</option>
+                                                    <option value="free">免费用户</option>
+                                                    <option value="member">会员用户</option>
+                                                </select>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <select class="form-select" id="userSortSelect" onchange="sortUsers()">
+                                                    <option value="register">注册时间</option>
+                                                    <option value="active">活跃度</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div id="usersList">
+                                        <!-- 用户列表 -->
+                                    </div>
+                                </div>
+                                
+                                <!-- 会员统计 -->
+                                <div class="tab-pane fade" id="membership-pane" role="tabpanel">
+                                    <div class="row mb-4">
+                                        <div class="col-md-4">
+                                            <div class="card">
+                                                <div class="card-body text-center">
+                                                    <h6 class="text-muted">会员总数</h6>
+                                                    <h3 id="totalMembers">0</h3>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="card">
+                                                <div class="card-body text-center">
+                                                    <h6 class="text-muted">会员转化率</h6>
+                                                    <h3 id="memberConversionRate">0%</h3>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="card">
+                                                <div class="card-body text-center">
+                                                    <h6 class="text-muted">即将到期</h6>
+                                                    <h3 id="expiringMembers">0</h3>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div id="membershipDetails">
+                                        <!-- 会员详情统计 -->
+                                    </div>
+                                </div>
+                                
+                                <!-- 收入统计 -->
+                                <div class="tab-pane fade" id="revenue-pane" role="tabpanel">
+                                    <div class="row mb-4">
+                                        <div class="col-md-3">
+                                            <div class="card bg-success text-white">
+                                                <div class="card-body text-center">
+                                                    <h6>今日收入</h6>
+                                                    <h4 id="todayRevenue">¥0</h4>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <div class="card bg-primary text-white">
+                                                <div class="card-body text-center">
+                                                    <h6>本月收入</h6>
+                                                    <h4 id="monthRevenue">¥0</h4>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <div class="card bg-info text-white">
+                                                <div class="card-body text-center">
+                                                    <h6>总订单数</h6>
+                                                    <h4 id="totalOrderCount">0</h4>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <div class="card bg-warning text-white">
+                                                <div class="card-body text-center">
+                                                    <h6>平均订单</h6>
+                                                    <h4 id="avgOrderAmount">¥0</h4>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div id="revenueDetails">
+                                        <!-- 收入详情 -->
+                                    </div>
+                                </div>
+                                
+                                <!-- 内容管理 -->
+                                <div class="tab-pane fade" id="content-pane" role="tabpanel">
+                                    <div class="mb-3">
+                                        <ul class="nav nav-pills">
+                                            <li class="nav-item">
+                                                <button class="nav-link active" onclick="showContentTab('posts')">帖子管理</button>
+                                            </li>
+                                            <li class="nav-item">
+                                                <button class="nav-link" onclick="showContentTab('comments')">评论管理</button>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                    <div id="contentManagementArea">
+                                        <!-- 内容管理区域 -->
+                                    </div>
+                                </div>
+                                
+                                <!-- 行为分析 -->
+                                <div class="tab-pane fade" id="analytics-pane" role="tabpanel">
+                                    <div id="userBehaviorAnalysis">
+                                        <!-- 用户行为分析 -->
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    </main>
+
+    <!-- 页脚 -->
+    <footer class="bg-dark text-light py-4 mt-5">
+        <div class="container text-center">
+            <p>&copy; 2024 星座运势. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <!-- 性能监控 -->
+    <script>
+        // 页面性能监控
+        window.addEventListener('load', () => {
+            if ('performance' in window) {
+                const perfData = performance.timing;
+                const pageLoadTime = perfData.loadEventEnd - perfData.navigationStart;
+                const domReadyTime = perfData.domContentLoadedEventEnd - perfData.navigationStart;
+                
+                console.log('页面性能指标:');
+                console.log('页面加载时间:', pageLoadTime + 'ms');
+                console.log('DOM就绪时间:', domReadyTime + 'ms');
+                
+                // 资源加载时间
+                const resources = performance.getEntriesByType('resource');
+                resources.forEach(resource => {
+                    if (resource.duration > 1000) {
+                        console.warn('慢资源:', resource.name, resource.duration + 'ms');
+                    }
+                });
+                
+                // 发送性能数据到服务器（如果有）
+                // if (typeof sendPerformanceData === 'function') {
+                //     sendPerformanceData({
+                //         pageLoadTime,
+                //         domReadyTime,
+                //         resources: resources.map(r => ({
+                //             name: r.name,
+                //             duration: r.duration
+                //         }))
+                //     });
+                // }
+            }
+        });
+    </script>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // 基础页面切换函数（在main.js加载前可用）
+        function showPage(pageId) {
+            try {
+                if (!pageId) return;
+                
+                // 隐藏所有页面
+                const pages = document.querySelectorAll('.page-section');
+                pages.forEach(page => {
+                    page.classList.remove('active');
+                    page.style.display = 'none';
+                });
+                
+                // 显示目标页面
+                const targetPage = document.getElementById(pageId);
+                if (targetPage) {
+                    targetPage.classList.add('active');
+                    targetPage.style.display = 'block';
+                    
+                    // 页面显示后初始化对应功能
+                    setTimeout(() => {
+                        if (typeof window.initializePageFeatures === 'function') {
+                            window.initializePageFeatures(pageId);
+                        } else if (typeof initializePageFeatures === 'function') {
+                            initializePageFeatures(pageId);
+                        }
+                    }, 100);
+                    
+                    // 滚动到页面顶部
+                    setTimeout(() => {
+                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                    }, 100);
+                }
+                
+                // 更新导航状态
+                const navLinks = document.querySelectorAll('.navbar-nav .nav-link');
+                navLinks.forEach(link => {
+                    link.classList.remove('active');
+                    const href = link.getAttribute('href');
+                    if (href === `#${pageId}` || (pageId === 'home' && (href === '#home' || href === '#'))) {
+                        link.classList.add('active');
+                    }
+                });
+                
+                // 移动端自动关闭导航菜单
+                const navbarCollapse = document.querySelector('.navbar-collapse');
+                if (navbarCollapse && navbarCollapse.classList.contains('show')) {
+                    const bsCollapse = bootstrap?.Collapse?.getInstance(navbarCollapse);
+                    if (bsCollapse) {
+                        bsCollapse.hide();
+                    } else {
+                        navbarCollapse.classList.remove('show');
+                    }
+                }
+            } catch (error) {
+                console.error('页面切换出错:', error);
+            }
+        }
+        
+        // 初始化页面功能
+        function initializePageFeatures(pageId) {
+            try {
+                // 检查是否已加载main.js中的函数
+                if (typeof window.zodiacData === 'undefined') {
+                    // main.js还未加载，稍后重试
+                    setTimeout(() => initializePageFeatures(pageId), 200);
+                    return;
+                }
+                
+                switch(pageId) {
+                    case 'zodiac':
+                        // 初始化星座网格
+                        if (typeof initializeZodiacGrid === 'function') {
+                            initializeZodiacGrid();
+                        }
+                        break;
+                    case 'match':
+                        // 初始化配对选择器
+                        if (typeof initializeMatchSelectors === 'function') {
+                            initializeMatchSelectors();
+                        }
+                        break;
+                    case 'fortune':
+                        // 初始化运势页面的星座选择器
+                        setTimeout(() => {
+                            if (typeof window.initializeFortuneSelector === 'function') {
+                                window.initializeFortuneSelector();
+                                console.log('✅ 运势选择器已初始化');
+                            } else {
+                                console.error('❌ initializeFortuneSelector函数不存在');
+                            }
+                        }, 100);
+                        // 如果有选中的星座，显示运势
+                        if (typeof selectedZodiac !== 'undefined' && selectedZodiac) {
+                            setTimeout(() => {
+                                const fortuneSelect = document.getElementById('fortuneZodiacSelect');
+                                if (fortuneSelect) {
+                                    fortuneSelect.value = selectedZodiac;
+                                }
+                                if (typeof showFortune === 'function') {
+                                    showFortune(selectedZodiac);
+                                }
+                            }, 200);
+                        }
+                        break;
+                    case 'community':
+                        // 加载评论
+                        if (typeof loadComments === 'function') {
+                            loadComments();
+                        }
+                        break;
+                    case 'career':
+                        // 初始化职场选择器
+                        if (typeof initializeCareer === 'function') {
+                            initializeCareer();
+                        }
+                        break;
+                    case 'mom':
+                        // 初始化宝妈选择器
+                        if (typeof initializeMom === 'function') {
+                            initializeMom();
+                        }
+                        break;
+                    case 'mood':
+                        // 初始化心境倾听
+                        if (typeof initializeMoodListener === 'function') {
+                            initializeMoodListener();
+                        }
+                        break;
+                    case 'loveLine':
+                        // 初始化爱情专线
+                        if (typeof initializeLoveLine === 'function') {
+                            initializeLoveLine();
+                        }
+                        break;
+                    case 'profile':
+                        // 初始化个人中心
+                        if (typeof initializeProfileZodiacSelector === 'function') {
+                            initializeProfileZodiacSelector();
+                        }
+                        if (typeof loadUserProfile === 'function') {
+                            loadUserProfile();
+                        }
+                        break;
+                }
+            } catch (error) {
+                console.error('初始化页面功能出错:', error);
+            }
+        }
+        
+        // 同时挂载到window对象，确保全局可用
+        window.showPage = showPage;
+        window.initializePageFeatures = initializePageFeatures;
+    </script>
+    <script src="js/main.js?v=4.0" defer></script>
+</body>
+</html>

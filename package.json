@@ -1,0 +1,27 @@
+{
+  "name": "zodiac-website",
+  "version": "1.0.0",
+  "description": "星座运势网站 - 性能优化构建配置",
+  "scripts": {
+    "minify:html": "html-minifier --input-dir . --output-dir dist --file-ext html --collapse-whitespace --remove-comments --remove-optional-tags --remove-redundant-attributes --remove-script-type-attributes --remove-style-link-type-attributes --minify-css --minify-js",
+    "minify:css": "cleancss -o dist/css/style.min.css css/style.css",
+    "minify:js": "terser js/main.js -o dist/js/main.min.js -c -m --comments false",
+    "copy:sw": "copyfiles sw.js dist",
+    "build": "npm run minify:html && npm run minify:css && npm run minify:js && npm run copy:sw",
+    "test": "echo \"测试功能请参考测试文档.md\" && exit 0"
+  },
+  "devDependencies": {
+    "html-minifier": "^4.0.0",
+    "clean-css-cli": "^5.6.2",
+    "terser": "^5.19.2",
+    "copyfiles": "^2.4.1"
+  },
+  "keywords": [
+    "zodiac",
+    "fortune",
+    "website"
+  ],
+  "author": "",
+  "license": "ISC"
+}
+

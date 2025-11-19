@@ -1,0 +1,2957 @@
+/* 全局样式 */
+:root {
+    --primary-color: #6c5ce7;
+    --secondary-color: #a29bfe;
+    --accent-color: #fd79a8;
+    --dark-color: #2d3436;
+    --light-color: #f5f3ff;
+    --gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+body {
+    font-family: 'Microsoft YaHei', Arial, sans-serif;
+    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+    min-height: 100vh;
+    padding-top: 80px;
+}
+
+/* 导航栏样式 */
+.navbar {
+    background: var(--gradient) !important;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.navbar-brand {
+    font-weight: bold;
+    font-size: 1.5rem;
+}
+
+.navbar-nav .nav-link {
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.navbar-nav .nav-link:hover {
+    color: var(--accent-color) !important;
+    transform: translateY(-2px);
+}
+
+/* 主内容区域 */
+.main-content {
+    min-height: calc(100vh - 80px);
+}
+
+.page-section {
+    display: none;
+    padding: 2rem 0;
+}
+
+.page-section.active {
+    display: block;
+    animation: fadeIn 0.5s ease-in;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* 首页样式 */
+.hero-section {
+    background: var(--gradient);
+    color: white;
+    padding: 5rem 0;
+    border-radius: 0 0 50px 50px;
+    margin-bottom: 3rem;
+}
+
+.feature-card {
+    background: white;
+    padding: 2rem;
+    border-radius: 15px;
+    text-align: center;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    transition: all 0.3s ease;
+    cursor: pointer;
+    position: relative;
+}
+
+.feature-card::after {
+    content: '点击进入 →';
+    position: absolute;
+    bottom: 10px;
+    right: 15px;
+    font-size: 0.8rem;
+    color: var(--primary-color);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.feature-card:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+    background: linear-gradient(135deg, #fff 0%, #f8f9fa 100%);
+}
+
+.feature-card:hover::after {
+    opacity: 1;
+}
+
+.feature-card i {
+    font-size: 3rem;
+    color: var(--primary-color);
+    margin-bottom: 1rem;
+}
+
+/* 服务介绍卡片样式 */
+.service-card {
+    background: white;
+    padding: 2.5rem;
+    border-radius: 20px;
+    box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+    transition: all 0.3s ease;
+    border: 2px solid transparent;
+    position: relative;
+    overflow: hidden;
+}
+
+.service-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: var(--gradient);
+    transform: scaleX(0);
+    transition: transform 0.3s ease;
+}
+
+.service-card:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 15px 40px rgba(0,0,0,0.15);
+    border-color: var(--primary-color);
+}
+
+.service-card:hover::before {
+    transform: scaleX(1);
+}
+
+.service-icon {
+    width: 80px;
+    height: 80px;
+    margin: 0 auto 1.5rem;
+    background: var(--gradient);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 2.5rem;
+    transition: all 0.3s ease;
+}
+
+.service-card:hover .service-icon {
+    transform: scale(1.1) rotate(5deg);
+    box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+}
+
+.service-title {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: var(--dark-color);
+    margin-bottom: 1rem;
+    text-align: center;
+}
+
+.service-description {
+    color: #666;
+    line-height: 1.8;
+    margin-bottom: 1.5rem;
+    text-align: center;
+    min-height: 100px;
+}
+
+.service-features {
+    list-style: none;
+    padding: 0;
+    margin: 1.5rem 0;
+}
+
+.service-features li {
+    padding: 0.5rem 0;
+    color: #555;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.service-features li i {
+    color: var(--primary-color);
+    font-size: 1.2rem;
+}
+
+.service-card .btn {
+    width: 100%;
+    padding: 0.75rem 1.5rem;
+    font-weight: 600;
+    border-radius: 10px;
+    transition: all 0.3s ease;
+}
+
+.service-card .btn:hover {
+    transform: translateX(5px);
+    box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+    .service-card {
+        padding: 2rem;
+        margin-bottom: 2rem;
+    }
+    
+    .service-icon {
+        width: 70px;
+        height: 70px;
+        font-size: 2rem;
+    }
+    
+    .service-title {
+        font-size: 1.3rem;
+    }
+    
+    .service-description {
+        min-height: auto;
+    }
+}
+
+/* 星座卡片样式 */
+.zodiac-card {
+    background: white;
+    border-radius: 15px;
+    padding: 1.5rem;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+    margin-bottom: 1.5rem;
+}
+
+.zodiac-card:hover {
+    transform: translateY(-5px) scale(1.05);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+}
+
+.zodiac-card.selected {
+    background: var(--gradient);
+    color: white;
+}
+
+.zodiac-icon {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+}
+
+.zodiac-date {
+    font-size: 0.9rem;
+    opacity: 0.8;
+}
+
+/* 运势卡片样式 */
+.fortune-card {
+    background: white;
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+}
+
+.fortune-header {
+    background: var(--gradient);
+    color: white;
+    padding: 2rem;
+    text-align: center;
+}
+
+.fortune-body {
+    padding: 2rem;
+}
+
+.fortune-item {
+    margin-bottom: 2rem;
+    padding-bottom: 2rem;
+    border-bottom: 1px solid #eee;
+}
+
+.fortune-item:last-child {
+    border-bottom: none;
+}
+
+.fortune-label {
+    font-weight: bold;
+    color: var(--primary-color);
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.fortune-score {
+    margin-bottom: 1rem;
+}
+
+.score-bar {
+    background: #e9ecef;
+    height: 10px;
+    border-radius: 5px;
+    overflow: hidden;
+    margin-bottom: 0.5rem;
+}
+
+.score-bar::after {
+    content: '';
+    display: block;
+    height: 100%;
+    background: var(--gradient);
+    border-radius: 5px;
+    transition: width 1s ease;
+}
+
+.score-text {
+    font-weight: bold;
+    color: var(--primary-color);
+}
+
+/* 配对卡片样式 */
+.match-card {
+    background: white;
+    border-radius: 20px;
+    padding: 2rem;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+}
+
+.match-icon {
+    font-size: 2rem;
+    color: var(--accent-color);
+    margin-top: 2rem;
+}
+
+.match-result {
+    margin-top: 2rem;
+    padding-top: 2rem;
+    border-top: 2px solid #eee;
+}
+
+.match-score {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.score-circle {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    background: var(--gradient);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1rem;
+    font-size: 2rem;
+    font-weight: bold;
+    color: white;
+}
+
+/* 个人中心样式 */
+.profile-card {
+    background: white;
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+}
+
+.profile-header {
+    background: var(--gradient);
+    color: white;
+    padding: 2rem;
+    text-align: center;
+}
+
+.avatar {
+    font-size: 4rem;
+    margin-bottom: 1rem;
+}
+
+.profile-body {
+    padding: 2rem;
+}
+
+/* 心境倾听样式 */
+.mood-listener-card {
+    background: white;
+    border-radius: 25px;
+    overflow: hidden;
+    box-shadow: 0 15px 40px rgba(0,0,0,0.15);
+    border: 2px solid transparent;
+    background-clip: padding-box;
+    position: relative;
+}
+
+.mood-listener-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: var(--gradient);
+    border-radius: 25px;
+    padding: 2px;
+    z-index: -1;
+    mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    mask-composite: xor;
+    animation: glow 3s ease-in-out infinite;
+}
+
+@keyframes glow {
+    0%, 100% { opacity: 0.8; }
+    50% { opacity: 1; }
+}
+
+.mood-header {
+    background: var(--gradient);
+    color: white;
+    padding: 2.5rem;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+}
+
+.mood-header::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+    animation: float 6s ease-in-out infinite;
+}
+
+@keyframes float {
+    0%, 100% { transform: translate(0, 0) rotate(0deg); }
+    50% { transform: translate(30px, -30px) rotate(180deg); }
+}
+
+.mood-header h3 {
+    font-size: 2rem;
+    margin-bottom: 1rem;
+    font-weight: bold;
+    position: relative;
+    z-index: 1;
+}
+
+.mood-header p {
+    font-size: 1.1rem;
+    opacity: 0.9;
+    margin: 0;
+    position: relative;
+    z-index: 1;
+}
+
+.mood-body {
+    padding: 2.5rem;
+}
+
+.mood-emoji-selector {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.mood-emoji {
+    background: #f8f9fa;
+    border: 2px solid transparent;
+    border-radius: 15px;
+    padding: 1rem;
+    font-size: 2rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    min-width: 60px;
+    position: relative;
+}
+
+.mood-emoji:hover {
+    transform: scale(1.1) rotate(5deg);
+    background: #e9ecef;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+}
+
+.mood-emoji.selected {
+    border-color: var(--primary-color);
+    background: var(--light-color);
+    transform: scale(1.15);
+    box-shadow: 0 5px 15px rgba(108, 92, 231, 0.3);
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0% { box-shadow: 0 0 0 0 rgba(108, 92, 231, 0.4); }
+    70% { box-shadow: 0 0 0 10px rgba(108, 92, 231, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(108, 92, 231, 0); }
+}
+
+.mood-result {
+    animation: slideUp 0.5s ease-out;
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.result-header {
+    text-align: center;
+    margin-bottom: 2rem;
+    padding-bottom: 1rem;
+    border-bottom: 2px solid #f0f0f0;
+}
+
+.result-header h4 {
+    color: var(--primary-color);
+    font-size: 1.5rem;
+    font-weight: bold;
+    animation: fadeIn 1s ease;
+}
+
+.advice-section {
+    margin-bottom: 2rem;
+    padding: 1.5rem;
+    background: #f8f9fa;
+    border-radius: 15px;
+    border-left: 4px solid var(--primary-color);
+    transition: all 0.3s ease;
+}
+
+.advice-section:hover {
+    transform: translateX(5px);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+}
+
+.advice-section.warm-response {
+    background: linear-gradient(135deg, #fff5f5 0%, #ffe0e0 100%);
+    border-left: 4px solid var(--accent-color);
+    animation: warmGlow 2s ease-in-out infinite;
+}
+
+@keyframes warmGlow {
+    0%, 100% { box-shadow: 0 0 20px rgba(253, 121, 168, 0.2); }
+    50% { box-shadow: 0 0 30px rgba(253, 121, 168, 0.4); }
+}
+
+.comfort-section {
+    margin-bottom: 2rem;
+    padding: 1.5rem;
+    background: linear-gradient(135deg, #f0f8ff 0%, #e6f3ff 100%);
+    border-radius: 15px;
+    border-left: 4px solid #74c0fc;
+    position: relative;
+    overflow: hidden;
+}
+
+.comfort-section::before {
+    content: '💝';
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    font-size: 2rem;
+    opacity: 0.3;
+    animation: heartbeat 1.5s ease-in-out infinite;
+}
+
+@keyframes heartbeat {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.2); }
+}
+
+.advice-section h5 {
+    color: var(--primary-color);
+    font-weight: bold;
+    margin-bottom: 1rem;
+    font-size: 1.1rem;
+}
+
+.advice-section p {
+    margin: 0;
+    line-height: 1.6;
+    color: #495057;
+}
+
+.lucky-elements {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border-radius: 15px;
+    padding: 1.5rem;
+    margin-top: 2rem;
+    position: relative;
+    overflow: hidden;
+}
+
+.lucky-elements::before {
+    content: '';
+    position: absolute;
+    top: -2px;
+    left: -2px;
+    right: -2px;
+    bottom: -2px;
+    background: var(--gradient);
+    border-radius: 15px;
+    z-index: -1;
+    animation: shimmer 3s linear infinite;
+}
+
+@keyframes shimmer {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(100%); }
+}
+
+.lucky-elements h5 {
+    color: var(--primary-color);
+    font-weight: bold;
+    margin-bottom: 1.5rem;
+    text-align: center;
+}
+
+.lucky-item {
+    font-weight: bold;
+    color: var(--accent-color);
+    font-size: 1.1rem;
+    margin: 0;
+    text-align: center;
+    transition: all 0.3s ease;
+}
+
+.lucky-item:hover {
+    transform: scale(1.1);
+    text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.result-footer {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    margin-top: 2rem;
+    padding-top: 2rem;
+    border-top: 2px solid #f0f0f0;
+}
+
+/* 社区样式 */
+.community-card {
+    background: white;
+    border-radius: 20px;
+    padding: 2rem;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+}
+
+.community-post {
+    padding-bottom: 2rem;
+    border-bottom: 2px solid #eee;
+    margin-bottom: 2rem;
+}
+
+.comment-item {
+    background: #f8f9fa;
+    border-radius: 10px;
+    padding: 1.5rem;
+    margin-bottom: 1rem;
+    transition: all 0.3s ease;
+    border-left: 3px solid transparent;
+}
+
+.comment-item:hover {
+    transform: translateX(5px);
+    box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+    border-left-color: var(--primary-color);
+}
+
+.comment-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.comment-author {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-weight: bold;
+    color: var(--primary-color);
+}
+
+.author-zodiac {
+    font-size: 1.2rem;
+}
+
+.author-name {
+    color: var(--dark-color);
+}
+
+.comment-time {
+    font-size: 0.9rem;
+    color: #6c757d;
+}
+
+.comment-content {
+    line-height: 1.6;
+    margin-bottom: 1rem;
+    color: #495057;
+}
+
+.comment-actions {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+}
+
+.like-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+    transition: all 0.3s ease;
+}
+
+.like-btn.active {
+    color: var(--accent-color);
+    border-color: var(--accent-color);
+    background: rgba(253, 121, 168, 0.1);
+}
+
+.like-btn:hover {
+    transform: scale(1.05);
+}
+
+.like-count {
+    font-weight: bold;
+    font-size: 0.9rem;
+}
+
+.no-comments {
+    text-align: center;
+    padding: 3rem;
+    color: #6c757d;
+}
+
+.no-comments i {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    opacity: 0.5;
+}
+
+/* 职场分析样式 */
+.career-result-content, .mom-result-content {
+    background: white;
+    border-radius: 15px;
+    padding: 2rem;
+    margin-top: 1.5rem;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+}
+
+.result-header {
+    text-align: center;
+    margin-bottom: 2rem;
+    padding-bottom: 1rem;
+    border-bottom: 2px solid #f0f0f0;
+}
+
+.result-header h4 {
+    color: var(--primary-color);
+    margin-bottom: 0.5rem;
+}
+
+.career-scores, .mom-scores {
+    margin-bottom: 2rem;
+}
+
+.score-item {
+    margin-bottom: 1.5rem;
+    padding: 1rem;
+    background: #f8f9fa;
+    border-radius: 10px;
+    transition: all 0.3s ease;
+}
+
+.score-item:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+}
+
+.score-label {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-weight: bold;
+    color: var(--primary-color);
+    margin-bottom: 0.5rem;
+}
+
+.score-value {
+    background: var(--gradient);
+    color: white;
+    padding: 0.2rem 0.5rem;
+    border-radius: 15px;
+    font-size: 0.9rem;
+}
+
+.score-desc {
+    margin: 0.5rem 0 0 0;
+    color: #6c757d;
+    font-size: 0.9rem;
+    line-height: 1.4;
+}
+
+.career-advice, .mom-advice {
+    margin-bottom: 2rem;
+}
+
+.career-actions, .mom-actions {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    padding-top: 1.5rem;
+    border-top: 2px solid #f0f0f0;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+    body {
+        padding-top: 60px;
+    }
+    
+    .hero-section {
+        padding: 3rem 0;
+        border-radius: 0 0 30px 30px;
+    }
+    
+    .feature-card {
+        margin-bottom: 1rem;
+    }
+    
+    .zodiac-card {
+        margin-bottom: 1rem;
+    }
+    
+    .match-icon {
+        margin-top: 1rem;
+    }
+}
+
+/* 动画效果 */
+.btn {
+    transition: all 0.3s ease;
+}
+
+.btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+}
+
+.form-control, .form-select {
+    border-radius: 10px;
+    border: 2px solid #e9ecef;
+    transition: all 0.3s ease;
+}
+
+.form-control:focus, .form-select:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 0.2rem rgba(108, 92, 231, 0.25);
+}
+
+/* 加载动画 */
+.loading {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    border: 3px solid #f3f3f3;
+    border-top: 3px solid var(--primary-color);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* 工具类 */
+.text-gradient {
+    background: var(--gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.bg-gradient {
+    background: var(--gradient) !important;
+}
+
+.border-gradient {
+    border: 2px solid;
+    border-image: var(--gradient) 1;
+}
+
+/* 职场功能样式 */
+.career-section {
+    background: white;
+    border-radius: 20px;
+    padding: 2rem;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    margin-bottom: 2rem;
+    position: relative;
+    overflow: hidden;
+}
+
+.career-section::before {
+    content: '💼';
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    font-size: 2rem;
+    opacity: 0.3;
+    animation: float 3s ease-in-out infinite;
+}
+
+@keyframes float {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-10px); }
+}
+
+.career-header {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.career-header h3 {
+    color: var(--primary-color);
+    font-weight: bold;
+    margin-bottom: 1rem;
+}
+
+.career-header p {
+    color: #6c757d;
+    font-size: 1.1rem;
+}
+
+.career-item {
+    margin-bottom: 2rem;
+    padding: 1.5rem;
+    background: #f8f9fa;
+    border-radius: 15px;
+    border-left: 4px solid var(--primary-color);
+}
+
+.career-item h5 {
+    color: var(--primary-color);
+    font-weight: bold;
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.career-advice {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border-radius: 15px;
+    padding: 1.5rem;
+    margin-top: 2rem;
+    position: relative;
+}
+
+.career-advice h5 {
+    color: var(--primary-color);
+    font-weight: bold;
+    margin-bottom: 1rem;
+    font-size: 1.1rem;
+}
+
+.career-advice p {
+    margin: 0;
+    line-height: 1.6;
+    color: #495057;
+}
+
+/* 宝妈功能样式 */
+.mom-section {
+    background: white;
+    border-radius: 20px;
+    padding: 2rem;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    margin-bottom: 2rem;
+    position: relative;
+    overflow: hidden;
+}
+
+.mom-section::before {
+    content: '👶';
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    font-size: 2rem;
+    opacity: 0.3;
+    animation: bounce 2s ease-in-out infinite;
+}
+
+@keyframes bounce {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-5px); }
+}
+
+.mom-header {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.mom-header h3 {
+    color: var(--accent-color);
+    font-weight: bold;
+    margin-bottom: 1rem;
+}
+
+.mom-header p {
+    color: #6c757d;
+    font-size: 1.1rem;
+}
+
+.mom-item {
+    margin-bottom: 2rem;
+    padding: 1.5rem;
+    background: #fff5f5;
+    border-radius: 15px;
+    border-left: 4px solid var(--accent-color);
+}
+
+.mom-item h5 {
+    color: var(--accent-color);
+    font-weight: bold;
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.mom-advice {
+    background: linear-gradient(135deg, #fff5f5 0%, #ffe0e0 100%);
+    border-radius: 15px;
+    padding: 1.5rem;
+    margin-top: 2rem;
+    position: relative;
+}
+
+.mom-advice h5 {
+    color: var(--accent-color);
+    font-weight: bold;
+    margin-bottom: 1rem;
+    font-size: 1.1rem;
+}
+
+.mom-advice p {
+    margin: 0;
+    line-height: 1.6;
+    color: #495057;
+}
+
+/* 职场和宝妈功能共同样式 */
+.career-result, .mom-result {
+    display: none;
+    animation: slideIn 0.5s ease-out;
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.career-selector, .mom-selector {
+    max-width: 300px;
+    margin: 0 auto 2rem;
+}
+
+.career-selector .form-select, .mom-selector .form-select {
+    border-radius: 15px;
+    padding: 0.75rem;
+    font-size: 1.1rem;
+    border: 2px solid #e9ecef;
+}
+
+.career-selector .form-select:focus, .mom-selector .form-select:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 0.2rem rgba(108, 92, 231, 0.25);
+}
+
+.career-analyze-btn, .mom-analyze-btn {
+    background: var(--gradient);
+    border: none;
+    border-radius: 25px;
+    padding: 0.75rem 2rem;
+    font-weight: bold;
+    color: white;
+    transition: all 0.3s ease;
+    display: block;
+    margin: 0 auto;
+}
+
+.career-analyze-btn:hover, .mom-analyze-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+}
+
+/* 爱情专线功能样式 */
+.love-line-section {
+    background: white;
+    border-radius: 20px;
+    padding: 2rem;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    margin-bottom: 2rem;
+    position: relative;
+    overflow: hidden;
+}
+
+.love-line-section::before {
+    content: '💝';
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    font-size: 2rem;
+    opacity: 0.3;
+    animation: heartbeat 1.5s ease-in-out infinite;
+}
+
+@keyframes heartbeat {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+}
+
+.love-header {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.love-header h3 {
+    color: var(--accent-color);
+    font-weight: bold;
+    margin-bottom: 1rem;
+}
+
+.love-header p {
+    color: #6c757d;
+    font-size: 1.1rem;
+}
+
+/* 爱情选项卡样式 */
+.love-tabs {
+    border-bottom: 2px solid #f8f9fa;
+    margin-bottom: 2rem;
+}
+
+.love-tabs .nav-link {
+    color: #6c757d;
+    border: none;
+    border-bottom: 3px solid transparent;
+    border-radius: 0;
+    padding: 1rem 1.5rem;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.love-tabs .nav-link:hover {
+    color: var(--accent-color);
+    border-bottom-color: rgba(253, 121, 168, 0.3);
+}
+
+.love-tabs .nav-link.active {
+    color: var(--accent-color);
+    background: none;
+    border-bottom-color: var(--accent-color);
+}
+
+.love-tabs .nav-link i {
+    margin-right: 0.5rem;
+}
+
+/* 爱情结果展示样式 */
+.love-result {
+    background: linear-gradient(135deg, #fff5f8 0%, #ffe0e6 100%);
+    border-radius: 20px;
+    padding: 2rem;
+    margin-top: 2rem;
+    border: 1px solid rgba(253, 121, 168, 0.1);
+    animation: slideIn 0.5s ease-out;
+}
+
+.love-result .result-header {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.love-result .result-header h4 {
+    color: var(--accent-color);
+    font-weight: bold;
+    margin-bottom: 1rem;
+}
+
+/* 爱情分数条样式 */
+.love-score-section {
+    margin-bottom: 2rem;
+}
+
+.score-item {
+    display: flex;
+    align-items: center;
+    margin-bottom: 1rem;
+    padding: 1rem;
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+}
+
+.score-label {
+    flex: 0 0 150px;
+    font-weight: 500;
+    color: #495057;
+}
+
+.score-bar {
+    flex: 1;
+    height: 8px;
+    background: #e9ecef;
+    border-radius: 4px;
+    overflow: hidden;
+    margin: 0 1rem;
+}
+
+.score-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #ff6b9d, #c44569);
+    border-radius: 4px;
+    transition: width 1s ease;
+}
+
+.blossom-fill {
+    background: linear-gradient(90deg, #ff9a9e, #fad0c4);
+}
+
+.score-value {
+    font-weight: bold;
+    color: var(--accent-color);
+    min-width: 30px;
+}
+
+/* 爱情配对圆形分数 */
+.match-score-circle {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.score-circle {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #ff6b9d, #c44569);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1rem;
+    position: relative;
+    box-shadow: 0 5px 20px rgba(255, 107, 157, 0.3);
+}
+
+.score-circle::before {
+    content: '';
+    position: absolute;
+    inset: 5px;
+    border-radius: 50%;
+    background: white;
+}
+
+.score-circle span {
+    position: relative;
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: var(--accent-color);
+    z-index: 1;
+}
+
+/* 爱情建议区域 */
+.advice-section {
+    margin-bottom: 1.5rem;
+    padding: 1.5rem;
+    background: white;
+    border-radius: 15px;
+    border-left: 4px solid var(--accent-color);
+}
+
+.advice-section.warm-response {
+    background: linear-gradient(135deg, #fff5f8 0%, #ffe0e6 100%);
+    border-left-color: #ff6b9d;
+}
+
+.advice-section h5 {
+    color: var(--accent-color);
+    font-weight: bold;
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.advice-section p {
+    margin: 0;
+    line-height: 1.6;
+    color: #495057;
+}
+
+/* 爱情祝福区域 */
+.comfort-section {
+    background: linear-gradient(135deg, #ffeaa7 0%, #fdcb6e 100%);
+    border-radius: 15px;
+    padding: 1.5rem;
+    margin-top: 2rem;
+    text-align: center;
+}
+
+.comfort-section h5 {
+    color: #e17055;
+    font-weight: bold;
+    margin-bottom: 1rem;
+}
+
+.comfort-section p {
+    margin: 0;
+    line-height: 1.6;
+    color: #495057;
+    font-style: italic;
+}
+
+/* 爱情结果底部按钮 */
+.result-footer {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    margin-top: 2rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid rgba(253, 121, 168, 0.2);
+}
+
+.result-footer .btn {
+    border-radius: 25px;
+    padding: 0.75rem 2rem;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.result-footer .btn-outline-primary {
+    border-color: var(--accent-color);
+    color: var(--accent-color);
+}
+
+.result-footer .btn-outline-primary:hover {
+    background: var(--accent-color);
+    border-color: var(--accent-color);
+}
+
+/* 爱情专线响应式设计 */
+@media (max-width: 768px) {
+    .love-line-section {
+        margin-bottom: 1rem;
+        padding: 1.5rem;
+    }
+    
+    .love-tabs .nav-link {
+        padding: 0.75rem 1rem;
+        font-size: 0.9rem;
+    }
+    
+    .score-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+    }
+    
+    .score-label {
+        flex: none;
+    }
+    
+    .score-bar {
+        width: 100%;
+        margin: 0.5rem 0;
+    }
+    
+    .result-footer {
+        flex-direction: column;
+    }
+    
+    .result-footer .btn {
+        width: 100%;
+    }
+}
+
+/* 响应式设计扩展 */
+@media (max-width: 768px) {
+    .career-section, .mom-section {
+        margin-bottom: 1rem;
+        padding: 1.5rem;
+    }
+    
+    .career-item, .mom-item {
+        margin-bottom: 1rem;
+        padding: 1rem;
+    }
+    
+    .career-advice, .mom-advice {
+        padding: 1rem;
+        margin-top: 1rem;
+    }
+}
+
+/* ============================================
+   登录注册页面样式（新增，不影响现有样式）
+   ============================================ */
+
+.login-card {
+    background: white;
+    border-radius: 20px;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+    padding: 2.5rem;
+    margin-top: 2rem;
+    margin-bottom: 2rem;
+}
+
+.login-header {
+    margin-bottom: 2rem;
+}
+
+.login-header h2 {
+    color: var(--dark-color);
+    font-weight: bold;
+    margin-bottom: 0.5rem;
+}
+
+.login-header h2 i {
+    color: var(--primary-color);
+    margin-right: 0.5rem;
+}
+
+.login-card .form-label {
+    font-weight: 600;
+    color: var(--dark-color);
+    margin-bottom: 0.5rem;
+}
+
+.login-card .form-control {
+    border: 2px solid #e0e0e0;
+    border-radius: 10px;
+    padding: 0.75rem 1rem;
+    transition: all 0.3s ease;
+}
+
+.login-card .form-control:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 0.2rem rgba(108, 92, 231, 0.25);
+}
+
+.login-card .btn-primary {
+    background: var(--gradient);
+    border: none;
+    border-radius: 10px;
+    padding: 0.75rem;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.login-card .btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(108, 92, 231, 0.4);
+}
+
+.login-card .btn-success {
+    background: linear-gradient(135deg, #00b894 0%, #00cec9 100%);
+    border: none;
+    border-radius: 10px;
+    padding: 0.75rem;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.login-card .btn-success:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0, 184, 148, 0.4);
+}
+
+.login-card a {
+    color: var(--primary-color);
+    transition: color 0.3s ease;
+}
+
+.login-card a:hover {
+    color: var(--secondary-color);
+}
+
+.divider {
+    position: relative;
+    text-align: center;
+    margin: 1.5rem 0;
+}
+
+.divider::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: #e0e0e0;
+}
+
+.divider span {
+    position: relative;
+    background: white;
+    padding: 0 1rem;
+    color: #999;
+}
+
+.form-check-input:checked {
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
+}
+
+.input-group .btn-outline-secondary {
+    border: 2px solid #e0e0e0;
+    border-left: none;
+    border-radius: 0 10px 10px 0;
+    transition: all 0.3s ease;
+}
+
+.input-group .form-control {
+    border-right: none;
+    border-radius: 10px 0 0 10px;
+}
+
+.input-group .form-control:focus {
+    border-right: none;
+}
+
+.input-group .form-control:focus + .btn-outline-secondary {
+    border-color: var(--primary-color);
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+    .login-card {
+        padding: 1.5rem;
+        margin-top: 1rem;
+    }
+    
+    .login-header h2 {
+        font-size: 1.5rem;
+    }
+}
+
+/* ============================================
+   会员系统和支付页面样式（新增，不影响现有样式）
+   ============================================ */
+
+/* 会员套餐卡片 */
+.membership-card {
+    background: white;
+    border-radius: 20px;
+    box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+    overflow: hidden;
+    transition: all 0.3s ease;
+    position: relative;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.membership-card:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 15px 40px rgba(0,0,0,0.15);
+}
+
+.membership-card.featured {
+    border: 3px solid var(--primary-color);
+    transform: scale(1.05);
+}
+
+.membership-badge {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    background: var(--gradient);
+    color: white;
+    padding: 5px 15px;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: bold;
+    z-index: 10;
+}
+
+.membership-header {
+    padding: 2rem 1.5rem;
+    text-align: center;
+    color: white;
+}
+
+.membership-header.free {
+    background: linear-gradient(135deg, #95a5a6 0%, #7f8c8d 100%);
+}
+
+.membership-header.basic {
+    background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+}
+
+.membership-header.vip {
+    background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%);
+}
+
+.membership-header.annual {
+    background: linear-gradient(135deg, #9b59b6 0%, #8e44ad 100%);
+}
+
+.membership-header h3 {
+    font-size: 1.5rem;
+    font-weight: bold;
+    margin-bottom: 1rem;
+}
+
+.membership-header .price {
+    font-size: 2.5rem;
+    font-weight: bold;
+    margin-bottom: 0.5rem;
+}
+
+.membership-header .period {
+    font-size: 1rem;
+    font-weight: normal;
+}
+
+.membership-header .price-note {
+    font-size: 0.9rem;
+    opacity: 0.9;
+    margin-top: 0.5rem;
+}
+
+.membership-body {
+    padding: 2rem 1.5rem;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.membership-features {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 2rem 0;
+    flex: 1;
+}
+
+.membership-features li {
+    padding: 0.75rem 0;
+    color: #555;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.membership-features li:last-child {
+    border-bottom: none;
+}
+
+.membership-features li i {
+    color: var(--primary-color);
+    font-size: 1.2rem;
+    flex-shrink: 0;
+}
+
+/* 会员状态卡片 */
+.membership-status-card {
+    background: white;
+    border-radius: 15px;
+    box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+    padding: 1.5rem;
+}
+
+.membership-status-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 2px solid #f0f0f0;
+}
+
+.membership-icon {
+    width: 60px;
+    height: 60px;
+    background: var(--gradient);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 2rem;
+}
+
+.membership-info {
+    flex: 1;
+}
+
+.membership-info h4 {
+    margin: 0;
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: var(--dark-color);
+}
+
+.membership-benefits {
+    margin-top: 1rem;
+}
+
+.benefits-title {
+    font-weight: bold;
+    color: var(--dark-color);
+    margin-bottom: 1rem;
+    font-size: 1.1rem;
+}
+
+.benefits-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.benefits-list li {
+    padding: 0.5rem 0;
+    color: #555;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.benefits-list li i {
+    color: var(--primary-color);
+    font-size: 1rem;
+}
+
+/* 支付页面样式 */
+.payment-card {
+    background: white;
+    border-radius: 20px;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+    padding: 2.5rem;
+    margin-top: 2rem;
+}
+
+.payment-header h2 {
+    color: var(--dark-color);
+    font-weight: bold;
+    margin-bottom: 1rem;
+}
+
+.order-summary {
+    background: #f8f9fa;
+    border-radius: 10px;
+    padding: 1.5rem;
+    margin-top: 1.5rem;
+}
+
+.order-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.75rem 0;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.order-item:last-child {
+    border-bottom: none;
+}
+
+.order-label {
+    color: #666;
+    font-weight: 500;
+}
+
+.order-value {
+    color: var(--dark-color);
+    font-weight: 600;
+}
+
+.order-amount {
+    color: var(--primary-color);
+    font-size: 1.3rem;
+    font-weight: bold;
+}
+
+.order-number {
+    font-family: monospace;
+    color: #999;
+    font-size: 0.9rem;
+}
+
+.payment-methods {
+    margin-top: 2rem;
+}
+
+.payment-method-item {
+    margin-bottom: 1rem;
+    cursor: pointer;
+}
+
+.payment-method-item input[type="radio"] {
+    display: none;
+}
+
+.payment-method-label {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1.25rem;
+    border: 2px solid #e0e0e0;
+    border-radius: 10px;
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.payment-method-item input[type="radio"]:checked + .payment-method-label {
+    border-color: var(--primary-color);
+    background: rgba(108, 92, 231, 0.05);
+}
+
+.payment-method-item:hover .payment-method-label {
+    border-color: var(--primary-color);
+}
+
+.payment-icon {
+    width: 50px;
+    height: 50px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.8rem;
+    color: white;
+}
+
+.payment-icon.wechat {
+    background: linear-gradient(135deg, #07c160 0%, #06ad56 100%);
+}
+
+.payment-icon.alipay {
+    background: linear-gradient(135deg, #1677ff 0%, #0958d9 100%);
+}
+
+.payment-info {
+    flex: 1;
+}
+
+.payment-name {
+    font-weight: bold;
+    color: var(--dark-color);
+    margin-bottom: 0.25rem;
+}
+
+.payment-desc {
+    color: #999;
+    font-size: 0.9rem;
+}
+
+.payment-qrcode {
+    background: #f8f9fa;
+    border-radius: 10px;
+    padding: 2rem;
+}
+
+.qrcode-container {
+    background: white;
+    border-radius: 10px;
+    padding: 2rem;
+    display: inline-block;
+}
+
+.qrcode-placeholder {
+    text-align: center;
+}
+
+.payment-simulation {
+    text-align: center;
+    padding: 1rem;
+}
+
+.payment-actions {
+    margin-top: 2rem;
+}
+
+.payment-tips {
+    margin-top: 2rem;
+}
+
+.payment-tips .alert {
+    border-radius: 10px;
+    border: none;
+}
+
+.payment-tips ul {
+    padding-left: 1.5rem;
+}
+
+.payment-tips li {
+    margin-bottom: 0.5rem;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+    .membership-card {
+        margin-bottom: 2rem;
+    }
+    
+    .membership-card.featured {
+        transform: scale(1);
+    }
+    
+    .membership-header .price {
+        font-size: 2rem;
+    }
+    
+    .payment-card {
+        padding: 1.5rem;
+    }
+    
+    .membership-status-header {
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .membership-action {
+        width: 100%;
+    }
+    
+    .membership-action .btn {
+        width: 100%;
+    }
+}
+
+/* ============================================
+   第二阶段功能样式：本周/本月运势、个人中心完善、社区扩展
+   ============================================ */
+
+/* 运势标签页样式 */
+.fortune-tabs {
+    background: white;
+    border-radius: 15px;
+    padding: 1rem;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+}
+
+.fortune-tabs .nav-pills .nav-link {
+    border-radius: 10px;
+    color: #666;
+    transition: all 0.3s ease;
+}
+
+.fortune-tabs .nav-pills .nav-link.active {
+    background: var(--gradient);
+    color: white;
+}
+
+.fortune-tabs .nav-pills .nav-link .badge {
+    font-size: 0.7rem;
+    padding: 0.2rem 0.5rem;
+}
+
+/* 本周运势样式 */
+.weekly-summary {
+    margin-bottom: 2rem;
+}
+
+.weekly-day-item {
+    background: #f8f9fa;
+    border-radius: 10px;
+    padding: 1rem;
+    border-left: 4px solid var(--primary-color);
+}
+
+.day-header h6 {
+    margin: 0 0 0.75rem 0;
+    color: var(--dark-color);
+    font-weight: 600;
+}
+
+.day-scores {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0.75rem;
+}
+
+.day-score-item {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.score-label {
+    font-size: 0.85rem;
+    color: #666;
+    font-weight: 500;
+}
+
+.mini-score-bar {
+    height: 8px;
+    background: #e0e0e0;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.mini-bar {
+    height: 100%;
+    background: var(--gradient);
+    transition: width 0.5s ease;
+}
+
+.score-value {
+    font-size: 0.9rem;
+    font-weight: bold;
+    color: var(--primary-color);
+}
+
+/* 本月运势样式 */
+.monthly-summary {
+    margin-bottom: 2rem;
+}
+
+.monthly-week-item {
+    background: white;
+    border-radius: 15px;
+    padding: 1.5rem;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    border-left: 4px solid var(--secondary-color);
+}
+
+.week-header h5 {
+    color: var(--dark-color);
+    margin-bottom: 0.5rem;
+}
+
+.week-scores {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+    margin-top: 1rem;
+}
+
+.week-score-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem;
+    background: #f8f9fa;
+    border-radius: 8px;
+}
+
+.week-score-item i {
+    color: var(--primary-color);
+    font-size: 1.2rem;
+}
+
+/* 个人中心功能菜单样式 */
+.profile-menu-card {
+    background: white;
+    border-radius: 15px;
+    padding: 1.5rem;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+}
+
+.menu-item-card {
+    text-align: center;
+    padding: 1.5rem;
+    background: #f8f9fa;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.menu-item-card:hover {
+    background: var(--gradient);
+    color: white;
+    transform: translateY(-5px);
+    box-shadow: 0 5px 15px rgba(108, 92, 231, 0.3);
+}
+
+.menu-item-card:hover .menu-icon {
+    color: white;
+}
+
+.menu-item-card:hover .text-muted {
+    color: rgba(255,255,255,0.9) !important;
+}
+
+.menu-icon {
+    font-size: 2.5rem;
+    color: var(--primary-color);
+    margin-bottom: 0.75rem;
+    transition: all 0.3s ease;
+}
+
+.menu-item-card h6 {
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+}
+
+/* 设置页面样式 */
+.settings-card {
+    background: white;
+    border-radius: 20px;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+    padding: 2.5rem;
+}
+
+.settings-section {
+    margin-bottom: 2rem;
+    padding-bottom: 2rem;
+    border-bottom: 2px solid #f0f0f0;
+}
+
+.settings-section:last-child {
+    border-bottom: none;
+}
+
+.settings-section h5 {
+    color: var(--dark-color);
+    margin-bottom: 1.5rem;
+    font-weight: 600;
+}
+
+.setting-item {
+    margin-bottom: 1.5rem;
+}
+
+.setting-item:last-child {
+    margin-bottom: 0;
+}
+
+.form-check-input:checked {
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
+}
+
+/* 帮助中心样式 */
+.help-card {
+    background: white;
+    border-radius: 20px;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+    padding: 2.5rem;
+}
+
+.help-section h5 {
+    color: var(--dark-color);
+    margin-bottom: 1.5rem;
+    font-weight: 600;
+}
+
+.accordion-button {
+    font-weight: 500;
+}
+
+.accordion-button:not(.collapsed) {
+    background: var(--gradient);
+    color: white;
+}
+
+.accordion-button:not(.collapsed)::after {
+    filter: brightness(0) invert(1);
+}
+
+/* 意见反馈样式 */
+.feedback-card {
+    background: white;
+    border-radius: 20px;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+    padding: 2.5rem;
+}
+
+/* 社区扩展样式 */
+.community-toolbar {
+    background: white;
+    border-radius: 15px;
+    padding: 1.5rem;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+}
+
+.community-post-card {
+    background: white;
+    border-radius: 15px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    overflow: hidden;
+}
+
+.post-header {
+    background: #f8f9fa;
+    padding: 1rem 1.5rem;
+    border-bottom: 2px solid #e0e0e0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.post-header h5 {
+    margin: 0;
+    color: var(--dark-color);
+    font-weight: 600;
+}
+
+.post-body {
+    padding: 1.5rem;
+}
+
+.image-upload-area {
+    margin-bottom: 1rem;
+}
+
+.image-preview {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.image-preview-item {
+    position: relative;
+    width: 120px;
+    height: 120px;
+    border-radius: 10px;
+    overflow: hidden;
+    border: 2px solid #e0e0e0;
+}
+
+.image-preview-item img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.image-preview-item .btn-close {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    background: rgba(0,0,0,0.5);
+    border-radius: 50%;
+    opacity: 1;
+}
+
+.community-post-item {
+    background: white;
+    border-radius: 15px;
+    padding: 1.5rem;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    transition: all 0.3s ease;
+}
+
+.community-post-item:hover {
+    box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+    transform: translateY(-2px);
+}
+
+.post-item-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.post-author {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.author-avatar {
+    font-size: 1.5rem;
+}
+
+.author-name {
+    font-weight: 600;
+    color: var(--dark-color);
+}
+
+.post-time {
+    color: #999;
+    font-size: 0.9rem;
+}
+
+.post-item-content {
+    color: #555;
+    line-height: 1.6;
+    margin-bottom: 1rem;
+}
+
+.post-images {
+    display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+}
+
+.post-image {
+    max-width: 200px;
+    max-height: 200px;
+    border-radius: 10px;
+    object-fit: cover;
+    cursor: pointer;
+    transition: transform 0.3s ease;
+}
+
+.post-image:hover {
+    transform: scale(1.05);
+}
+
+.post-item-actions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+    .day-scores {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .week-scores {
+        grid-template-columns: 1fr;
+    }
+    
+    .settings-card,
+    .help-card,
+    .feedback-card {
+        padding: 1.5rem;
+    }
+    
+    .community-toolbar .row {
+        flex-direction: column;
+    }
+    
+    .post-item-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+    }
+    
+    .image-preview-item {
+        width: 100px;
+        height: 100px;
+    }
+    
+    .post-image {
+        max-width: 100%;
+    }
+}
+
+/* ============================================
+   消息通知系统样式（第三阶段功能）
+   ============================================ */
+
+.notifications-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: white;
+    border-radius: 15px;
+    padding: 1.5rem;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+}
+
+.notification-actions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.notification-tabs {
+    background: white;
+    border-radius: 15px;
+    padding: 1rem;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+}
+
+.notification-tabs .nav-pills .nav-link {
+    border-radius: 10px;
+    color: #666;
+    transition: all 0.3s ease;
+    margin-right: 0.5rem;
+}
+
+.notification-tabs .nav-pills .nav-link.active {
+    background: var(--gradient);
+    color: white;
+}
+
+.notification-tabs .nav-pills .nav-link .badge {
+    margin-left: 0.5rem;
+}
+
+.notifications-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.notification-item {
+    background: white;
+    border-radius: 15px;
+    padding: 1.5rem;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    display: flex;
+    gap: 1rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+.notification-item:hover {
+    box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+    transform: translateY(-2px);
+}
+
+.notification-item.unread {
+    background: linear-gradient(90deg, rgba(108, 92, 231, 0.05) 0%, white 5%);
+    border-left: 4px solid var(--primary-color);
+}
+
+.notification-icon {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    color: white;
+    flex-shrink: 0;
+}
+
+.notification-icon.primary {
+    background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+}
+
+.notification-icon.success {
+    background: linear-gradient(135deg, #00b894 0%, #00cec9 100%);
+}
+
+.notification-icon.warning {
+    background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%);
+}
+
+.notification-icon.info {
+    background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+}
+
+.notification-content {
+    flex: 1;
+}
+
+.notification-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 0.5rem;
+}
+
+.notification-title {
+    margin: 0;
+    font-weight: 600;
+    color: var(--dark-color);
+    font-size: 1.1rem;
+}
+
+.notification-time {
+    color: #999;
+    font-size: 0.85rem;
+    white-space: nowrap;
+    margin-left: 1rem;
+}
+
+.notification-text {
+    color: #666;
+    line-height: 1.6;
+    margin: 0;
+}
+
+.notification-action {
+    margin-top: 0.75rem;
+}
+
+.notification-actions {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 0.5rem;
+}
+
+.unread-dot {
+    width: 10px;
+    height: 10px;
+    background: var(--primary-color);
+    border-radius: 50%;
+    display: block;
+}
+
+.empty-notifications {
+    background: white;
+    border-radius: 15px;
+    padding: 3rem;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+}
+
+/* 导航栏消息图标样式 */
+#notificationNavItem .nav-link {
+    position: relative;
+}
+
+#notificationBadge {
+    font-size: 0.7rem;
+    padding: 0.25rem 0.5rem;
+    min-width: 20px;
+    text-align: center;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+    .notifications-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+    }
+    
+    .notification-tabs .nav-pills {
+        flex-wrap: wrap;
+    }
+    
+    .notification-tabs .nav-pills .nav-link {
+        font-size: 0.85rem;
+        padding: 0.5rem 0.75rem;
+    }
+    
+    .notification-item {
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+    
+    .notification-header {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+    
+    .notification-time {
+        margin-left: 0;
+    }
+    
+    .notification-actions {
+        flex-direction: row;
+        align-items: center;
+        width: 100%;
+        justify-content: flex-end;
+    }
+}
+
+/* ============================================
+   社区扩展功能样式：热门话题、关注、私信
+   ============================================ */
+
+/* 热门话题样式 */
+.hot-topics {
+    background: white;
+    border-radius: 15px;
+    padding: 1.5rem;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+}
+
+.hot-topics-header {
+    margin-bottom: 1rem;
+}
+
+.hot-topics-header h5 {
+    margin: 0;
+    color: var(--dark-color);
+    font-weight: 600;
+}
+
+.hot-topics-header h5 i {
+    color: #ff6b6b;
+    margin-right: 0.5rem;
+}
+
+.hot-topics-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+}
+
+.hot-topic-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    background: linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%);
+    color: white;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.hot-topic-tag:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(255, 107, 107, 0.4);
+}
+
+.hot-topic-tag i {
+    font-size: 1rem;
+}
+
+/* 私信样式 */
+.private-messages-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.private-message-item {
+    padding: 1rem;
+    border-radius: 10px;
+    max-width: 80%;
+}
+
+.private-message-item.sent {
+    background: var(--gradient);
+    color: white;
+    margin-left: auto;
+    text-align: right;
+}
+
+.private-message-item.received {
+    background: #f0f0f0;
+    color: var(--dark-color);
+    margin-right: auto;
+}
+
+.message-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem;
+    font-size: 0.85rem;
+    opacity: 0.8;
+}
+
+.message-author {
+    font-weight: 600;
+}
+
+.message-time {
+    font-size: 0.75rem;
+}
+
+.message-content {
+    line-height: 1.5;
+    word-wrap: break-word;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+    .hot-topics-list {
+        flex-direction: column;
+    }
+    
+    .hot-topic-tag {
+        width: 100%;
+        justify-content: center;
+    }
+    
+    .private-message-item {
+        max-width: 90%;
+    }
+}
+
+/* ============================================
+   邀请好友、积分系统、活动页面样式
+   ============================================ */
+
+/* 邀请好友页面 */
+.invite-header {
+    padding: 2rem 0;
+}
+
+.invite-code-section .form-control-lg {
+    font-size: 1.5rem;
+    letter-spacing: 2px;
+}
+
+.invite-stats {
+    padding: 1.5rem;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 10px;
+    color: white;
+}
+
+.stat-item {
+    padding: 1rem;
+}
+
+.stat-value {
+    font-size: 2rem;
+    font-weight: bold;
+    margin-bottom: 0.5rem;
+}
+
+.stat-label {
+    font-size: 0.9rem;
+    opacity: 0.9;
+}
+
+.invite-rules {
+    border-left: 4px solid #007bff;
+}
+
+.invite-rules ul {
+    padding-left: 1.5rem;
+}
+
+.invite-rules li {
+    margin-bottom: 0.5rem;
+}
+
+/* 积分系统页面 */
+.points-balance {
+    padding: 2rem 0;
+}
+
+.points-balance h2 {
+    font-size: 3rem;
+    color: #ffc107;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+}
+
+#pointsShop .card {
+    transition: transform 0.3s, box-shadow 0.3s;
+    border: 1px solid #e0e0e0;
+}
+
+#pointsShop .card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+#pointsRecordsList .list-group-item {
+    border-left: 3px solid transparent;
+    transition: all 0.3s;
+}
+
+#pointsRecordsList .list-group-item:hover {
+    background-color: #f8f9fa;
+    border-left-color: #007bff;
+}
+
+/* 活动页面 */
+.activity-icon {
+    width: 80px;
+    height: 80px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 15px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+}
+
+#activitiesList .card {
+    transition: transform 0.3s, box-shadow 0.3s;
+}
+
+#activitiesList .card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+}
+
+.activity-detail {
+    padding: 1rem;
+}
+
+.activity-detail h2 {
+    color: #333;
+    margin-bottom: 1rem;
+}
+
+.activity-detail .alert {
+    border-left: 4px solid #17a2b8;
+}
+
+/* 响应式调整 */
+@media (max-width: 768px) {
+    .stat-value {
+        font-size: 1.5rem;
+    }
+    
+    .points-balance h2 {
+        font-size: 2rem;
+    }
+    
+    .activity-icon {
+        width: 60px;
+        height: 60px;
+        font-size: 2rem !important;
+    }
+}
+
+/* ============================================
+   运势历史记录和收藏样式
+   ============================================ */
+
+/* 幸运元素展示 */
+.fortune-lucky-elements {
+    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+    border-radius: 15px;
+    padding: 1.5rem;
+    margin-top: 1.5rem;
+}
+
+.lucky-item {
+    text-align: center;
+    padding: 1rem;
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.lucky-item:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.lucky-icon {
+    font-size: 2rem;
+    margin-bottom: 0.5rem;
+}
+
+.lucky-label {
+    font-size: 0.9rem;
+    color: #666;
+    margin-bottom: 0.5rem;
+}
+
+.lucky-value {
+    font-size: 1.2rem;
+    font-weight: bold;
+    color: #333;
+}
+
+/* 运势操作按钮 */
+.fortune-actions {
+    padding: 1rem;
+    background: #f8f9fa;
+    border-radius: 10px;
+}
+
+/* 历史记录和收藏列表 */
+#fortuneHistoryList .list-group-item,
+#fortuneFavoritesList .list-group-item {
+    border-left: 3px solid transparent;
+    transition: all 0.3s;
+    margin-bottom: 0.5rem;
+}
+
+#fortuneHistoryList .list-group-item:hover,
+#fortuneFavoritesList .list-group-item:hover {
+    background-color: #f8f9fa;
+    border-left-color: #007bff;
+    transform: translateX(5px);
+}
+
+/* 响应式调整 */
+@media (max-width: 768px) {
+    .lucky-item {
+        margin-bottom: 1rem;
+    }
+    
+    .fortune-actions {
+        flex-direction: column;
+    }
+    
+    .fortune-actions .btn {
+        width: 100%;
+        margin-bottom: 0.5rem;
+    }
+}
+
+/* ============================================
+   数据统计后台样式
+   ============================================ */
+
+#admin .card {
+    margin-bottom: 1rem;
+}
+
+#admin .card-header {
+    background-color: #f8f9fa;
+    border-bottom: 2px solid #dee2e6;
+}
+
+#admin .nav-tabs .nav-link {
+    color: #495057;
+    border: none;
+    border-bottom: 2px solid transparent;
+}
+
+#admin .nav-tabs .nav-link.active {
+    color: #007bff;
+    border-bottom-color: #007bff;
+    background-color: transparent;
+}
+
+#admin .list-group-item {
+    transition: all 0.3s;
+}
+
+#admin .list-group-item:hover {
+    background-color: #f8f9fa;
+    transform: translateX(3px);
+}
+
+#admin .table {
+    font-size: 0.9rem;
+}
+
+#admin .table th {
+    background-color: #f8f9fa;
+    font-weight: 600;
+}
+
+/* 响应式调整 */
+@media (max-width: 768px) {
+    #admin .card-body {
+        padding: 1rem;
+    }
+    
+    #admin .table {
+        font-size: 0.8rem;
+    }
+}
