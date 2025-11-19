@@ -755,9 +755,9 @@ const PointsAPI = {
                     record_id: recordData.recordId || generateId(),
                     phone: recordData.phone,
                     type: recordData.type || 'earn', // earn 或 spend
-                    points: recordData.points,
+                    amount: recordData.points, // 注意：数据库字段是 amount，不是 points
                     reason: recordData.reason,
-                    category: recordData.category || 'other',
+                    description: recordData.description || '',
                     create_time: recordData.time || new Date().toISOString()
                 })
                 .select()
@@ -787,9 +787,9 @@ const PointsAPI = {
                 recordId: record.record_id,
                 phone: record.phone,
                 type: record.type,
-                points: parseInt(record.points),
+                points: parseInt(record.amount), // 注意：数据库字段是 amount
                 reason: record.reason,
-                category: record.category,
+                category: record.description || 'other',
                 time: record.create_time || record.created_at
             }));
         } catch (error) {

@@ -7032,12 +7032,12 @@ async function processInviteRegistration(phone) {
         
         // 给邀请人奖励积分
         if (typeof addPoints === 'function') {
-            addPoints(inviterPhone, 100, '邀请好友奖励', 'invite');
+            await addPoints(inviterPhone, 100, '邀请好友奖励', 'invite');
         }
         
         // 给被邀请人奖励积分
         if (typeof addPoints === 'function') {
-            addPoints(phone, 50, '新用户注册奖励', 'register');
+            await addPoints(phone, 50, '新用户注册奖励', 'register');
         }
         
         // 清除待处理的邀请码
@@ -7072,8 +7072,8 @@ async function processInviteRegistration(phone) {
         localStorage.setItem('inviteRecords', JSON.stringify(inviteRecords));
         
         if (typeof addPoints === 'function') {
-            addPoints(inviterPhone, 100, '邀请好友奖励', 'invite');
-            addPoints(phone, 50, '新用户注册奖励', 'register');
+            await addPoints(inviterPhone, 100, '邀请好友奖励', 'invite');
+            await addPoints(phone, 50, '新用户注册奖励', 'register');
         }
         
         localStorage.removeItem('pendingInviteCode');
@@ -7095,12 +7095,20 @@ const pointsProducts = [
 ];
 
 // 获取用户积分
-function getUserPoints(phone) {
+async function getUserPoints(phone) {
     if (!phone) phone = currentUser?.phone;
     if (!phone) return 0;
     
-    const pointsData = JSON.parse(localStorage.getItem('userPoints') || '{}');
-    return pointsData[phone] || 0;
+    try {
+        // 使用 Supabase API 获取积分
+        const points = await PointsAPI.getUserPoints(phone);
+        return points;
+    } catch (error) {
+        console.error('获取用户积分失败:', error);
+        // 如果失败，尝试从 localStorage 获取（降级处理）
+        const pointsData = JSON.parse(localStorage.getItem('userPoints') || '{}');
+        return pointsData[phone] || 0;
+    }
 }
 
 // 添加积分
@@ -7153,51 +7161,82 @@ async function addPoints(phone, points, reason, type) {
 }
 
 // 消费积分
-function spendPoints(phone, points, reason, type) {
+async function spendPoints(phone, points, reason, type) {
     if (!phone) phone = currentUser?.phone;
     if (!phone) return false;
     
-    const currentPoints = getUserPoints(phone);
-    if (currentPoints < points) {
-        showMessage('积分不足');
-        return false;
+    try {
+        const currentPoints = await getUserPoints(phone);
+        if (currentPoints < points) {
+            showMessage('积分不足');
+            return false;
+        }
+        
+        const newPoints = currentPoints - points;
+        
+        // 更新积分到 Supabase
+        await PointsAPI.updateUserPoints(phone, newPoints);
+        
+        // 添加积分记录
+        await PointsAPI.addPointsRecord({
+            phone: phone,
+            type: 'spend',
+            points: points,
+            reason: reason,
+            category: type || 'other',
+            time: new Date().toISOString()
+        });
+        
+        // 同时保存到 localStorage 作为备份
+        const pointsData = JSON.parse(localStorage.getItem('userPoints') || '{}');
+        pointsData[phone] = newPoints;
+        localStorage.setItem('userPoints', JSON.stringify(pointsData));
+        
+        return true;
+    } catch (error) {
+        console.error('消费积分失败:', error);
+        // 如果失败，仍然更新 localStorage（降级处理）
+        const currentPoints = await getUserPoints(phone);
+        if (currentPoints < points) {
+            showMessage('积分不足');
+            return false;
+        }
+        
+        const pointsData = JSON.parse(localStorage.getItem('userPoints') || '{}');
+        pointsData[phone] = currentPoints - points;
+        localStorage.setItem('userPoints', JSON.stringify(pointsData));
+        
+        const records = JSON.parse(localStorage.getItem('pointsRecords') || '[]');
+        records.unshift({
+            phone: phone,
+            points: -points,
+            type: 'spend',
+            reason: reason,
+            category: type || 'other',
+            time: new Date().toISOString()
+        });
+        localStorage.setItem('pointsRecords', JSON.stringify(records));
+        
+        return true;
     }
-    
-    const pointsData = JSON.parse(localStorage.getItem('userPoints') || '{}');
-    pointsData[phone] = currentPoints - points;
-    localStorage.setItem('userPoints', JSON.stringify(pointsData));
-    
-    // 记录积分变动
-    const records = JSON.parse(localStorage.getItem('pointsRecords') || '[]');
-    records.unshift({
-        phone: phone,
-        points: -points,
-        type: 'spend',
-        reason: reason,
-        category: type || 'other',
-        time: new Date().toISOString()
-    });
-    localStorage.setItem('pointsRecords', JSON.stringify(records));
-    
-    return true;
 }
 
 // 初始化积分页面
-window.initializePoints = function() {
+window.initializePoints = async function() {
     if (!checkLoginStatus()) {
         showMessage('请先登录');
         showPage('login');
         return;
     }
     
-    const balance = getUserPoints();
+    const balance = await getUserPoints();
     document.getElementById('pointsBalance').textContent = balance;
     
     // 加载积分商城
     loadPointsShop();
     
-    // 加载积分记录
-    loadPointsRecords();
+    // 加载积分记录（现在是异步的）
+    await loadPointsRecords();
 };
 
 // 加载积分商城
@@ -7221,22 +7260,23 @@ function loadPointsShop() {
 }
 
 // 兑换商品
-window.exchangeProduct = function(productId) {
+window.exchangeProduct = async function(productId) {
     const product = pointsProducts.find(p => p.id === productId);
     if (!product) return;
     
     if (product.points > 0) {
         // 使用积分兑换
-        if (spendPoints(null, product.points, `兑换${product.name}`, 'exchange')) {
+        const success = await spendPoints(null, product.points, `兑换${product.name}`, 'exchange');
+        if (success) {
             if (product.type === 'membership') {
                 // 设置会员
-                setUserMembership(product.value, 1);
+                await setUserMembership(product.value, 1);
                 showMessage(`成功兑换${product.name}！`);
             } else if (product.type === 'points') {
-                addPoints(null, product.value, `购买${product.name}`, 'purchase');
+                await addPoints(null, product.value, `购买${product.name}`, 'purchase');
                 showMessage(`成功购买${product.name}！`);
             }
-            initializePoints();
+            await initializePoints();
         }
     } else {
         // 使用现金购买（模拟）
@@ -7245,30 +7285,60 @@ window.exchangeProduct = function(productId) {
 };
 
 // 加载积分记录
-function loadPointsRecords() {
+async function loadPointsRecords() {
+    if (!checkLoginStatus() || !currentUser || !currentUser.phone) return;
+    
     const phone = currentUser.phone;
-    const records = JSON.parse(localStorage.getItem('pointsRecords') || '[]');
-    const myRecords = records.filter(r => r.phone === phone).slice(0, 50);
-    
     const listEl = document.getElementById('pointsRecordsList');
-    if (myRecords.length === 0) {
-        listEl.innerHTML = '<div class="text-center text-muted py-4">暂无积分记录</div>';
-        return;
-    }
+    if (!listEl) return;
     
-    listEl.innerHTML = myRecords.map(record => `
-        <div class="list-group-item">
-            <div class="d-flex justify-content-between align-items-center">
-                <div>
-                    <strong class="${record.type === 'earn' ? 'text-success' : 'text-danger'}">
-                        ${record.type === 'earn' ? '+' : '-'}${Math.abs(record.points)} 积分
-                    </strong>
-                    <small class="text-muted d-block">${record.reason}</small>
-                    <small class="text-muted">${formatTime(record.time)}</small>
+    try {
+        // 使用 Supabase API 获取积分记录
+        const records = await PointsAPI.getPointsRecords(phone, 50);
+        
+        if (records.length === 0) {
+            listEl.innerHTML = '<div class="text-center text-muted py-4">暂无积分记录</div>';
+            return;
+        }
+        
+        listEl.innerHTML = records.map(record => `
+            <div class="list-group-item">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <strong class="${record.type === 'earn' ? 'text-success' : 'text-danger'}">
+                            ${record.type === 'earn' ? '+' : '-'}${Math.abs(record.points)} 积分
+                        </strong>
+                        <small class="text-muted d-block">${record.reason || ''}</small>
+                        <small class="text-muted">${formatTime(record.time)}</small>
+                    </div>
                 </div>
             </div>
-        </div>
-    `).join('');
+        `).join('');
+    } catch (error) {
+        console.error('加载积分记录失败:', error);
+        // 如果失败，尝试从 localStorage 加载（降级处理）
+        const records = JSON.parse(localStorage.getItem('pointsRecords') || '[]');
+        const myRecords = records.filter(r => r.phone === phone).slice(0, 50);
+        
+        if (myRecords.length === 0) {
+            listEl.innerHTML = '<div class="text-center text-muted py-4">暂无积分记录</div>';
+            return;
+        }
+        
+        listEl.innerHTML = myRecords.map(record => `
+            <div class="list-group-item">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <strong class="${record.type === 'earn' ? 'text-success' : 'text-danger'}">
+                            ${record.type === 'earn' ? '+' : '-'}${Math.abs(record.points)} 积分
+                        </strong>
+                        <small class="text-muted d-block">${record.reason}</small>
+                        <small class="text-muted">${formatTime(record.time)}</small>
+                    </div>
+                </div>
+            </div>
+        `).join('');
+    }
 }
 
 // 筛选积分记录
@@ -7444,7 +7514,7 @@ window.viewActivityDetail = function(activityId) {
 };
 
 // 参与活动
-window.participateActivity = function(activityId) {
+window.participateActivity = async function(activityId) {
     const activity = activitiesData.find(a => a.id === activityId);
     if (!activity) return;
     
@@ -7477,14 +7547,14 @@ window.participateActivity = function(activityId) {
         showMessage('感谢参与！');
     } else if (activityId === 'activity2') {
         // 每日签到
-        handleDailyCheckin();
+        await handleDailyCheckin();
     } else {
         showMessage('感谢参与！活动奖励将在活动结束后统一发放。');
     }
 };
 
 // 每日签到
-function handleDailyCheckin() {
+async function handleDailyCheckin() {
     const phone = currentUser.phone;
     const today = new Date().toISOString().split('T')[0];
     
@@ -7525,8 +7595,8 @@ function handleDailyCheckin() {
     checkins[phone] = userCheckins;
     localStorage.setItem('dailyCheckins', JSON.stringify(checkins));
     
-    addPoints(phone, points, '每日签到', 'checkin');
-    initializePoints();
+    await addPoints(phone, points, '每日签到', 'checkin');
+    await initializePoints();
 };
 
 // ============================================
